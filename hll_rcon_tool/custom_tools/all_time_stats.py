@@ -18,13 +18,16 @@ from rcon.models import enter_session
 from rcon.player_history import get_player_profile
 from rcon.rcon import Rcon, StructuredLogLineWithMetaData
 
-
 # Configuration (you must review/change these !)
 # -----------------------------------------------------------------------------
 
 # Should we display the stats to every player on connect ?
 # True or False
 DISPLAY_ON_CONNECT = True
+
+# Should we display full stats (display problem on console) ?
+# True or False
+DETAILED_DISPLAY = True
 
 # The command the players have to enter in chat to display their stats
 CHAT_COMMAND = ["!me"]
@@ -63,259 +66,285 @@ TRANSL = {
     "kills": ["kills", "kills", "tötet", "zabójstwa"],
     "deaths": ["deaths", "morts", "todesfälle", "śmierci"],
     "ratio": ["ratio", "ratio", "verhältnis", "średnia"],
+    "statistics": ["statistics", "statistiques", "statistiken", "statystyka"],
 }
 
 # (End of configuration)
 # -----------------------------------------------------------------------------
+SECONDS_IN_YEAR = 31536000
+SECONDS_IN_MONTH = 2592000
+SECONDS_IN_DAY = 86400
+SECONDS_IN_HOUR = 3600
+SECONDS_IN_MINUTE = 60
+BASIC_DISPLAY_QUERIES = {
+    "tot_games": "SELECT COUNT(*) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
+    "avg_combat": "SELECT AVG(combat) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
+    "avg_offense": "SELECT AVG(offense) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
+    "avg_defense": "SELECT AVG(defense) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
+    "avg_support": "SELECT AVG(support) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
+    "tot_kills": "SELECT SUM(kills) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
+    "tot_teamkills": "SELECT SUM(teamkills) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
+    "tot_deaths": "SELECT SUM(deaths) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
+    "tot_deaths_by_tk": "SELECT SUM(deaths_by_tk) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
+    "most_killed": """
+        SELECT key AS player_name, SUM(value::int) AS total_kills, count(*)
+        FROM public.player_stats, jsonb_each_text(most_killed)
+        WHERE playersteamid_id = :db_player_id
+        GROUP BY key
+        ORDER BY total_kills DESC
+        LIMIT 3
+    """,
+    "most_death_by": """
+        SELECT key AS player_name, SUM(value::int) AS total_kills, count(*)
+        FROM public.player_stats, jsonb_each_text(death_by)
+        WHERE playersteamid_id = :db_player_id
+        GROUP BY key
+        ORDER BY total_kills DESC
+        LIMIT 3
+    """,
+}
+DETAILED_DISPLAY_QUERIES = {
+    **BASIC_DISPLAY_QUERIES,
+    "most_used_weapons": """
+        SELECT weapon, SUM(usage_count) AS total_usage
+        FROM (
+            SELECT playersteamid_id, weapon_data.key AS weapon,
+            (weapon_data.value::text)::int AS usage_count
+            FROM public.player_stats,
+            jsonb_each(weapons::jsonb) AS weapon_data
+            WHERE playersteamid_id = :db_player_id
+        ) AS weapon_usage
+        GROUP BY weapon
+        ORDER BY total_usage DESC
+        LIMIT 3
+    """,
+}
 
+def format_hours_minutes_seconds(hours: int, minutes: int, seconds: int) -> str:
+    """
+    Formats the hours, minutes, and seconds as XXhXXmXXs.
+    """
+    return f"{int(hours):02d}h{int(minutes):02d}m{int(seconds):02d}s"
 
 def readable_duration(seconds: int) -> str:
     """
-    returns a human readable string (X years, X monthes, X days, XXhXXmXXs)
-    from a number of seconds
+    Returns a human-readable string (years, months, days, XXhXXmXXs)
+    from a number of seconds.
     """
-    years, lessthanayearseconds = divmod(seconds, 31536000)
-    monthes, lessthanamonthseconds = divmod(lessthanayearseconds, 2592000)
-    days, lessthanadayseconds = divmod(lessthanamonthseconds, 86400)
-    hours, lessthananhourseconds = divmod(lessthanadayseconds, 3600)
-    minutes, seconds = divmod(lessthananhourseconds, 60)
+    seconds = int(seconds)
 
-    time_string = ""
+    years, remaining_seconds_in_year = divmod(seconds, SECONDS_IN_YEAR)
+    months, remaining_seconds_in_month = divmod(remaining_seconds_in_year, SECONDS_IN_MONTH)
+    days, remaining_seconds_in_day = divmod(remaining_seconds_in_month, SECONDS_IN_DAY)
+    hours, remaining_seconds_in_hour = divmod(remaining_seconds_in_day, SECONDS_IN_HOUR)
+    minutes, remaining_seconds = divmod(remaining_seconds_in_hour, SECONDS_IN_MINUTE)
+
+    time_string = []
+
     if years > 0:
-        time_string += f"{int(years)} {TRANSL['years'][LANG]}"
-
-    if monthes > 0:
-        if years > 0:
-            time_string += ", "
-        time_string += f"{int(monthes)} {TRANSL['monthes'][LANG]}"
-
+        time_string.append(f"{years} {TRANSL['years'][LANG]}")
+    if months > 0:
+        time_string.append(f"{months} {TRANSL['months'][LANG]}")
     if days > 0:
-        if years > 0 or monthes > 0:
-            time_string += ", "
-        time_string += f"{int(days)} {TRANSL['days'][LANG]}"
+        time_string.append(f"{days} {TRANSL['days'][LANG]}")
 
-    if years > 0 or monthes > 0 or days > 0:
-        time_string += ", "
-    if hours > 0:
-        time_string += f"{int(hours)}h"
+    if any([years, months, days]):
+        time_string.append(",")
+
+    time_string.append(format_hours_minutes_seconds(hours, minutes, remaining_seconds))
+
+    return " ".join(filter(None, time_string))
+
+def get_player_profile_data(player_id):
+    """
+    Retrieves the main data of the player profile.
+    """
+    player_profile_data = get_player_profile(player_id=player_id, nb_sessions=0)
+    if not player_profile_data:
+        logger.error("No player_profile_data")
+        return None
+    return player_profile_data
+
+def get_queries():
+    """
+    Returns the necessary queries according to the DETAILED_DISPLAY configuration.
+    """
+    return DETAILED_DISPLAY_QUERIES if DETAILED_DISPLAY else BASIC_DISPLAY_QUERIES
+
+def fetch_player_id(sess, player_id):
+    """
+    Retrieve the player ID from the database.
+    """
+    player_id_query = "SELECT s.id FROM steam_id_64 AS s WHERE s.steam_id_64 = :player_id"
+    result = sess.execute(text(player_id_query), {"player_id": player_id}).fetchone()
+    if not result:
+        logger.error(f"No db_player_id for {player_id}")
+        return None
+    return result[0]
+
+def execute_queries(sess, queries, params):
+    """
+    Runs queries to retrieve statistics.
+    """
+    results = {}
+    for key, query in queries.items():
+        results[key] = sess.execute(text(query), params).fetchall()
+    return results
+
+def get_player_database_stats(player_id):
+    """
+    Retrieves statistics from the database for a given player.
+    """
+    queries = get_queries()
+    with enter_session() as sess:
+        db_player_id = fetch_player_id(sess, player_id)
+        if db_player_id is None:
+            return None
+        params = {"db_player_id": db_player_id}
+        return execute_queries(sess, queries, params)
+
+def format_top_results(rows, limit, pattern):
+    return "\n".join(pattern.format(*row) for row in rows[:limit])
+
+def generate_simplified_message(player_name, player_profile_data, database_stats):
+    """
+    Generates a simplified message for console servers.
+    """
+    total_playtime_seconds = player_profile_data["total_playtime_seconds"]
+
+    tot_games = int(database_stats["tot_games"][0][0])
+    avg_combat = round(float(database_stats["avg_combat"][0][0]), 2)
+    avg_support = round(float(database_stats["avg_support"][0][0]), 2)
+    avg_offense = round(float(database_stats["avg_offense"][0][0]), 2)
+    avg_defense = round(float(database_stats["avg_defense"][0][0]), 2)
+    tot_kills = int(database_stats["tot_kills"][0][0])
+    tot_teamkills = int(database_stats["tot_teamkills"][0][0])
+    tot_deaths = int(database_stats["tot_deaths"][0][0])
+    most_killed = format_top_results(database_stats["most_killed"], 1, "{} : {:d} ({:d} games)")
+    most_death_by = format_top_results(database_stats["most_death_by"], 1, "{} : {:d} ({:d} games)")
+
+    ratio_kd = round(((tot_kills - tot_teamkills) / max(1, tot_deaths)), 2)
+
+    message = (
+        f"▒ {player_name} ▒\n"
+        f"{TRANSL['playedgames'][LANG]} : {tot_games}\n"
+        f"{TRANSL['cumulatedplaytime'][LANG]} : {readable_duration(total_playtime_seconds)}\n"
+        "\n"
+        f"▒ {TRANSL['statistics'][LANG]} ▒\n"
+        f"{TRANSL['combat'][LANG]} : {avg_combat} ; {TRANSL['support'][LANG]} : {avg_support}\n"
+        f"{TRANSL['offense'][LANG]} : {avg_offense} ; {TRANSL['defense'][LANG]} : {avg_defense}\n"
+        "\n"
+        f"{tot_kills} {TRANSL['kills'][LANG]} / {tot_deaths} {TRANSL['deaths'][LANG]} = {ratio_kd} {TRANSL['ratio'][LANG]}\n"
+        "\n"
+        f"{TRANSL['victims'][LANG]} : {most_killed}\n"
+        f"{TRANSL['nemesis'][LANG]} : {most_death_by}"
+    )
+
+    return message
+
+def get_penalties_message(player_profile_data):
+    kicks = player_profile_data["penalty_count"]["KICK"]
+    punishes = player_profile_data["penalty_count"]["PUNISH"]
+    tempbans = player_profile_data["penalty_count"]["TEMPBAN"]
+
+    penalties_message = ""
+    if kicks == 0 and punishes == 0 and tempbans == 0:
+        penalties_message += f"{TRANSL['nopunish'][LANG]}"
     else:
-        time_string += "0h"
+        if punishes > 0:
+            penalties_message += f"{punishes} punishes"
+        if kicks > 0:
+            if punishes > 0:
+                penalties_message += ", "
+            penalties_message += f"{kicks} kicks"
+        if tempbans > 0:
+            if punishes > 0 or kicks > 0:
+                penalties_message += ", "
+            penalties_message += f"{tempbans} tempbans"
 
-    if minutes > 0:
-        if minutes < 10:
-            time_string += "0"
-        time_string += f"{int(minutes)}m"
-    else:
-        time_string += "00m"
+    return penalties_message
 
-    if seconds > 0:
-        if seconds < 10:
-            time_string += "0"
-        time_string += f"{int(seconds)}s"
-    else:
-        time_string += "00s"
-
-    return time_string
-
-
-def all_time_stats_on_connected(rcon: Rcon, struct_log: StructuredLogLineWithMetaData):
+def generate_detailed_message(player_name, player_profile_data, database_stats):
     """
-    Call the message on player's connection
+    Generates a detailed message with all available statistics.
     """
-    if DISPLAY_ON_CONNECT:
-        all_time_stats(rcon, struct_log)
+    created = player_profile_data['created']
+    sessions_count = player_profile_data['sessions_count']
+    total_playtime_seconds = player_profile_data["total_playtime_seconds"]
 
+    tot_games = int(database_stats["tot_games"][0][0])
+    avg_combat = round(float(database_stats["avg_combat"][0][0]), 2)
+    avg_support = round(float(database_stats["avg_support"][0][0]), 2)
+    avg_offense = round(float(database_stats["avg_offense"][0][0]), 2)
+    avg_defense = round(float(database_stats["avg_defense"][0][0]), 2)
+    tot_kills = int(database_stats["tot_kills"][0][0])
+    tot_teamkills = int(database_stats["tot_teamkills"][0][0])
+    tot_deaths = int(database_stats["tot_deaths"][0][0])
+    tot_deaths_by_tk = int(database_stats["tot_deaths_by_tk"][0][0])
+    most_used_weapons = format_top_results(database_stats["most_used_weapons"], 3, "{} ({:d} kills)")
+    most_killed = format_top_results(database_stats["most_killed"], 3, "{} : {:d} ({:d} games)")
+    most_death_by = format_top_results(database_stats["most_death_by"], 3, "{} : {:d} ({:d} games)")
 
-def all_time_stats_on_chat_command(rcon: Rcon, struct_log: StructuredLogLineWithMetaData):
-    """
-    Call the message on chat command
-    """
-    # Ensure there's a sub_content in the CHAT log
-    if not (chat_message := struct_log["sub_content"]):
-       logger.error("No sub_content in CHAT log")
-       return
+    elapsed_time_seconds = (datetime.now() - datetime.fromisoformat(str(created))).total_seconds()
+    ratio_kd = round(((tot_kills - tot_teamkills) / max(1, tot_deaths)), 2)
 
-    # Search for any CHAT_COMMAND in the chat message
-    if chat_message in CHAT_COMMAND:
-        all_time_stats(rcon, struct_log)
-
+    message = (
+        f"▒ {player_name} ▒\n"
+        "\n"
+        f"{TRANSL['firsttimehere'][LANG]}\n"
+        f"{readable_duration(elapsed_time_seconds)}\n"
+        f"{TRANSL['gamesessions'][LANG]} : {sessions_count}\n"
+        f"{TRANSL['playedgames'][LANG]} : {tot_games}\n"
+        "\n"
+        f"{TRANSL['cumulatedplaytime'][LANG]}\n"
+        f"{readable_duration(total_playtime_seconds)}\n"
+        f"({TRANSL['averagesession'][LANG]} : {readable_duration(total_playtime_seconds/sessions_count)})\n"
+        "\n"
+        f"▒ {TRANSL['punishments'][LANG]} ▒\n"
+        f"{get_penalties_message(player_profile_data)}\n"
+        "\n"
+        f"▒ {TRANSL['averages'][LANG]} ▒\n"
+        f"{TRANSL['combat'][LANG]} : {avg_combat} ; {TRANSL['support'][LANG]} : {avg_support}\n"
+        f"{TRANSL['offense'][LANG]} : {avg_offense} ; {TRANSL['defense'][LANG]} : {avg_defense}\n"
+        "\n"
+        f"▒ {TRANSL['totals'][LANG]} ▒\n"
+        f"{TRANSL['kills'][LANG]} : {tot_kills} ({tot_teamkills} TKs)\n"
+        f"{TRANSL['deaths'][LANG]} : {tot_deaths} ({tot_deaths_by_tk} TKs)\n"
+        f"{TRANSL['ratio'][LANG]} {TRANSL['kills'][LANG]}/{TRANSL['deaths'][LANG]} : {ratio_kd}\n"
+        "\n"
+        f"▒ {TRANSL['favoriteweapons'][LANG]} ▒\n"
+        f"{most_used_weapons}\n"
+        "\n"
+        f"▒ {TRANSL['victims'][LANG]} ▒\n"
+        f"{most_killed}\n"
+        "\n"
+        f"▒ {TRANSL['nemesis'][LANG]} ▒\n"
+        f"{most_death_by}"
+    )
+    return message
 
 def all_time_stats(rcon: Rcon, struct_log: StructuredLogLineWithMetaData):
     """
-    get data from profile and database and return it in an ingame message
+    Collects and displays statistics based on the DETAILED_DISPLAY variable.
     """
-    # Ensure there's player_id and player_name in the CHAT or CONNECTED log
-    if not (player_id := struct_log["player_id_1"]) or \
-       not (player_name := struct_log["player_name_1"]):
-       logger.error("No player_id or player_name")
-       return
+    if not (player_id := struct_log["player_id_1"]) or not (player_name := struct_log["player_name_1"]):
+        logger.error("No player_id or player_name")
+        return
 
     try:
-        # Ask for the player's profile data
-        player_profile_data = get_player_profile(player_id=player_id, nb_sessions=0)
-
-        # Ensure we got profile data
+        player_profile_data = get_player_profile_data(player_id)
         if player_profile_data is None:
-            logger.error("No player_profile_data")
             return
 
-        # Set variables from profile data
-        created = player_profile_data["created"]
-        sessions_count = player_profile_data["sessions_count"]
-        total_playtime_seconds = player_profile_data["total_playtime_seconds"]
-        kicks = player_profile_data["penalty_count"]["KICK"]
-        punishes = player_profile_data["penalty_count"]["PUNISH"]
-        tempbans = player_profile_data["penalty_count"]["TEMPBAN"]
+        database_stats = get_player_database_stats(player_id)
+        if database_stats is None:
+            return
 
-        elapsed_time_seconds = (datetime.now() - datetime.fromisoformat(str(created))).total_seconds()
-
-        # Build a string that shows the player's penalties
-        penalties_message = ""
-        if kicks == 0 and punishes == 0 and tempbans == 0:
-            penalties_message += f"{TRANSL['nopunish'][LANG]}"
+        if DETAILED_DISPLAY:
+            message = generate_detailed_message(player_name, player_profile_data, database_stats)
         else:
-            if punishes > 0:
-                penalties_message += f"{punishes} punishes"
-            if kicks > 0:
-                if punishes > 0:
-                    penalties_message += ", "
-                penalties_message += f"{kicks} kicks"
-            if tempbans > 0:
-                if punishes > 0 or kicks > 0:
-                    penalties_message += ", "
-                penalties_message += f"{tempbans} tempbans"
+            message = generate_simplified_message(player_name, player_profile_data, database_stats)
 
-        # SQL query : get the player_id
-        player_id_query = "SELECT s.id FROM steam_id_64 AS s WHERE s.steam_id_64 = :player_id"
-
-        # SQL queries for player stats
-        queries = {
-            "tot_games": "SELECT COUNT(*) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
-            "avg_combat": "SELECT AVG(combat) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
-            "avg_offense": "SELECT AVG(offense) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
-            "avg_defense": "SELECT AVG(defense) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
-            "avg_support": "SELECT AVG(support) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
-            "tot_kills": "SELECT SUM(kills) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
-            "tot_teamkills": "SELECT SUM(teamkills) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
-            "tot_deaths": "SELECT SUM(deaths) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
-            "tot_deaths_by_tk": "SELECT SUM(deaths_by_tk) FROM public.player_stats WHERE playersteamid_id = :db_player_id",
-            "most_used_weapons": """
-                SELECT weapon, SUM(usage_count) AS total_usage 
-                FROM (
-                    SELECT playersteamid_id, weapon_data.key AS weapon, 
-                    (weapon_data.value::text)::int AS usage_count 
-                    FROM public.player_stats, 
-                    jsonb_each(weapons::jsonb) AS weapon_data 
-                    WHERE playersteamid_id = :db_player_id
-                ) AS weapon_usage 
-                GROUP BY weapon 
-                ORDER BY total_usage DESC 
-                LIMIT 3
-            """,
-            "most_killed": """
-                SELECT key AS player_name, SUM(value::int) AS total_kills, count(*) 
-                FROM public.player_stats, jsonb_each_text(most_killed) 
-                WHERE playersteamid_id = :db_player_id 
-                GROUP BY key 
-                ORDER BY total_kills DESC 
-                LIMIT 3
-            """,
-            "most_death_by": """
-                SELECT key AS player_name, SUM(value::int) AS total_kills, count(*) 
-                FROM public.player_stats, jsonb_each_text(death_by) 
-                WHERE playersteamid_id = :db_player_id 
-                GROUP BY key 
-                ORDER BY total_kills DESC 
-                LIMIT 3
-            """
-        }
-
-        # Opens a database session
-        with enter_session() as sess:
-
-            # Get the player_id from the database
-            db_player_result = sess.execute(text(player_id_query), {"player_id": player_id}).fetchone()
-
-            # Ensure there the data relative to player_id exists
-            if not db_player_result:
-                logger.error(f"No db_player_id for {player_id}")
-                return
-
-            # Set db_player_id
-            db_player_id = db_player_result[0]
-            params = {"db_player_id": db_player_id}
-
-            # Get the different SQL queries results
-            results = {}
-            for key, query in queries.items():
-                result = sess.execute(text(query), params).fetchall()
-                results[key] = result
-
-            # Set variables from SQL queries results
-            tot_games = int(results["tot_games"][0][0])
-            avg_combat = round(float(results["avg_combat"][0][0]), 2)
-            avg_offense = round(float(results["avg_offense"][0][0]), 2)
-            avg_defense = round(float(results["avg_defense"][0][0]), 2)
-            avg_support = round(float(results["avg_support"][0][0]), 2)
-            tot_kills = int(results["tot_kills"][0][0])
-            tot_teamkills = int(results["tot_teamkills"][0][0])
-            tot_deaths = int(results["tot_deaths"][0][0])
-            tot_deaths_by_tk = int(results["tot_deaths_by_tk"][0][0])
-            most_used_weapons = "\n".join(
-                f"{row[0]} ({row[1]} kills)"
-                for row in results["most_used_weapons"][:3]
-            )
-            most_killed = "\n".join(
-                f"{row[0]} : {row[1]} ({row[2]} games)"
-                for row in results["most_killed"][:3]
-            )
-            most_death_by = "\n".join(
-                f"{row[0]} : {row[1]} ({row[2]} games)"
-                for row in results["most_death_by"][:3]
-            )
-
-        # Avoids a division by zero on ratio_kd
-        if tot_deaths - tot_deaths_by_tk == 0:
-            ratio_kd = (tot_kills - tot_teamkills)
-        else :
-            ratio_kd = round(((tot_kills - tot_teamkills) / (tot_deaths - tot_deaths_by_tk)), 2)
-
-        # Build the message
-        message = (
-            f"{player_name}\n"
-            "\n"
-            f"{TRANSL['firsttimehere'][LANG]}\n"
-            f"{readable_duration(elapsed_time_seconds)}\n"
-            f"{TRANSL['gamesessions'][LANG]} : {sessions_count}\n"
-            f"{TRANSL['playedgames'][LANG]} : {tot_games}\n"
-            "\n"
-            f"{TRANSL['cumulatedplaytime'][LANG]}\n"
-            f"{readable_duration(total_playtime_seconds)}\n"
-            f"({TRANSL['averagesession'][LANG]} : {readable_duration(total_playtime_seconds/sessions_count)})\n"
-            "\n"
-            f"▒ {TRANSL['punishments'][LANG]} ▒\n"
-            f"{penalties_message}\n"
-            "\n"
-            f"▒ {TRANSL['averages'][LANG]} ▒\n"
-            f"{TRANSL['combat'][LANG]} : {avg_combat} ; {TRANSL['support'][LANG]} : {avg_support}\n"
-            f"{TRANSL['offense'][LANG]} : {avg_offense} ; {TRANSL['defense'][LANG]} : {avg_defense}\n"
-            "\n"
-            f"▒ {TRANSL['totals'][LANG]} ▒\n"
-            f"{TRANSL['kills'][LANG]} : {tot_kills} ({tot_teamkills} TKs)\n"
-            f"{TRANSL['deaths'][LANG]} : {tot_deaths} ({tot_deaths_by_tk} TKs)\n"
-            f"{TRANSL['ratio'][LANG]} {TRANSL['kills'][LANG]}/{TRANSL['deaths'][LANG]} : {ratio_kd}\n"
-            "\n"
-            f"▒ {TRANSL['favoriteweapons'][LANG]} ▒\n"
-            f"{most_used_weapons}\n"
-            "\n"
-            f"▒ {TRANSL['victims'][LANG]} ▒\n"
-            f"{most_killed}\n"
-            "\n"
-            f"▒ {TRANSL['nemesis'][LANG]} ▒\n"
-            f"{most_death_by}"
-        )
-
-        # Send the message
         rcon.message_player(
             player_name=player_name,
             player_id=player_id,
@@ -325,8 +354,23 @@ def all_time_stats(rcon: Rcon, struct_log: StructuredLogLineWithMetaData):
         )
 
     except Exception as error:
-        logger.error(error)
+        logger.error(error, exc_info=True)
 
+def all_time_stats_on_connected(rcon: Rcon, struct_log: StructuredLogLineWithMetaData):
+    """
+    Call the message on player's connection
+    """
+    if DISPLAY_ON_CONNECT:
+        all_time_stats(rcon, struct_log)
 
-# logger = logging.getLogger(__name__)
+def all_time_stats_on_chat_command(rcon: Rcon, struct_log: StructuredLogLineWithMetaData):
+    """
+    Call the message on chat command
+    """
+    if not (chat_message := struct_log["sub_content"]):
+        logger.error("No sub_content in CHAT log")
+        return
+    if chat_message in CHAT_COMMAND:
+        all_time_stats(rcon, struct_log)
+
 logger = logging.getLogger('rcon')
