@@ -261,25 +261,20 @@ def process_stats_to_display(player_id:str, player_profile, queries_to_execute:d
         if STATS_TO_DISPLAY["firsttimehere"]:
             created: str = player_profile.get("created", "2025-01-01T00:00:00.000000")
             elapsed_time_seconds:int = (datetime.now() - datetime.fromisoformat(str(created))).total_seconds()
-            firsttimehere:str = readable_duration(elapsed_time_seconds)
-            message_vars["firsttimehere"] = firsttimehere
+            message_vars["firsttimehere"] = str(readable_duration(elapsed_time_seconds))
         if STATS_TO_DISPLAY["tot_sessions"]:
-            tot_sessions: int = player_profile.get("sessions_count", "1")
-            message_vars["tot_sessions"] = tot_sessions
+            message_vars["tot_sessions"] = int(player_profile.get("sessions_count", "1"))
         if STATS_TO_DISPLAY["cumulatedplaytime"]:
             total_playtime_seconds: int = player_profile.get("total_playtime_seconds", "5400")
-            cumulatedplaytime:str = readable_duration(total_playtime_seconds)
-            message_vars["cumulatedplaytime"] = cumulatedplaytime
+            message_vars["cumulatedplaytime"] = str(readable_duration(total_playtime_seconds))
         if STATS_TO_DISPLAY["avg_sessiontime"]:
             total_playtime_seconds: int = player_profile.get("total_playtime_seconds", "5400")
             tot_sessions: int = player_profile.get("sessions_count", "1")
-            avg_sessiontime:str = readable_duration(int(total_playtime_seconds)/max(1, int(tot_sessions)))
-            message_vars["avg_sessiontime"] = avg_sessiontime
+            message_vars["avg_sessiontime"] = str(readable_duration(int(total_playtime_seconds)/max(1, int(tot_sessions))))
         if STATS_TO_DISPLAY["tot_punishments"]:
-            tot_punishments:str = get_penalties_message(player_profile)
-            message_vars["tot_punishments"] = tot_punishments
+            message_vars["tot_punishments"] = str(get_penalties_message(player_profile))
 
-    # Set message_vars from SQL queries results
+    # Set message_vars dict from SQL queries results
     if len(queries_to_execute) == 0:
         logger.info("No stat requires SQL queries.")
     else:
@@ -299,57 +294,42 @@ def process_stats_to_display(player_id:str, player_profile, queries_to_execute:d
                 result = sess.execute(text(query), {"db_player_id": db_player_id}).fetchall()
                 results[key] = result
 
+        # Store the results in a dict
         if STATS_TO_DISPLAY["tot_playedgames"]:
-            tot_playedgames:int = int(results["tot_playedgames"][0][0] or 0)
-            message_vars["tot_playedgames"] = tot_playedgames
-
+            message_vars["tot_playedgames"] = int(results["tot_playedgames"][0][0] or 0)
         if STATS_TO_DISPLAY["avg_combat"]:
-            avg_combat:float = float(results["avg_combat"][0][0] or 0)
-            message_vars["avg_combat"] = avg_combat
+            message_vars["avg_combat"] = float(results["avg_combat"][0][0] or 0)
         if STATS_TO_DISPLAY["avg_offense"]:
-            avg_offense:float = float(results["avg_offense"][0][0] or 0)
-            message_vars["avg_offense"] = avg_offense
+            message_vars["avg_offense"] = float(results["avg_offense"][0][0] or 0)
         if STATS_TO_DISPLAY["avg_defense"]:
-            avg_defense:float = float(results["avg_defense"][0][0] or 0)
-            message_vars["avg_defense"] = avg_defense
+            message_vars["avg_defense"] = float(results["avg_defense"][0][0] or 0)
         if STATS_TO_DISPLAY["avg_support"]:
-            avg_support:float = float(results["avg_support"][0][0] or 0)
-            message_vars["avg_support"] = avg_support
-
+            message_vars["avg_support"] = float(results["avg_support"][0][0] or 0)
         if STATS_TO_DISPLAY["tot_kills"]:
-            tot_kills:int = int(results["tot_kills"][0][0] or 0)
-            message_vars["tot_kills"] = tot_kills
+            message_vars["tot_kills"] = int(results["tot_kills"][0][0] or 0)
         if STATS_TO_DISPLAY["tot_teamkills"]:
-            tot_teamkills:int = int(results["tot_teamkills"][0][0] or 0)
-            message_vars["tot_teamkills"] = tot_teamkills
+            message_vars["tot_teamkills"] = int(results["tot_teamkills"][0][0] or 0)
         if STATS_TO_DISPLAY["tot_deaths"]:
-            tot_deaths:int = int(results["tot_deaths"][0][0] or 0)
-            message_vars["tot_deaths"] = tot_deaths
+            message_vars["tot_deaths"] = int(results["tot_deaths"][0][0] or 0)
         if STATS_TO_DISPLAY["tot_deaths_by_tk"]:
-            tot_deaths_by_tk:int = int(results["tot_deaths_by_tk"][0][0] or 0)
-            message_vars["tot_deaths_by_tk"] = tot_deaths_by_tk
+            message_vars["tot_deaths_by_tk"] = int(results["tot_deaths_by_tk"][0][0] or 0)
         if STATS_TO_DISPLAY["kd_ratio"]:
-            kd_ratio:float = float(results["kd_ratio"][0][0] or 0)
-            message_vars["kd_ratio"] = kd_ratio
-
+            message_vars["kd_ratio"] = float(results["kd_ratio"][0][0] or 0)
         if STATS_TO_DISPLAY["most_killed"]:
-            most_killed:str = "\n".join(
+            message_vars["most_killed"] = "\n".join(
                 f"{row[0]} : {row[1]} ({row[2]} {TRANSL['games'][LANG]})"
                 for row in results["most_killed"]
             )
-            message_vars["most_killed"] = most_killed
         if STATS_TO_DISPLAY["most_death_by"]:
-            most_death_by:str = "\n".join(
+            message_vars["most_death_by"] =  "\n".join(
                 f"{row[0]} : {row[1]} ({row[2]} {TRANSL['games'][LANG]})"
                 for row in results["most_death_by"]
             )
-            message_vars["most_death_by"] = most_death_by
         if STATS_TO_DISPLAY["most_used_weapons"]:
-            most_used_weapons:str = "\n".join(
+            message_vars["most_used_weapons"] = "\n".join(
                 f"{row[0]} ({row[1]} kills)"
                 for row in results["most_used_weapons"]
             )
-            message_vars["most_used_weapons"] = most_used_weapons
 
     return message_vars
 
@@ -443,7 +423,6 @@ def construct_message(player_name:str, message_vars: dict) -> str:
             message += f"{TRANSL['deaths'][LANG]} ({TRANSL['tks'][LANG]}) : {message_vars['tot_deaths_by_tk']}\n"
     if STATS_TO_DISPLAY["kd_ratio"]:
         message += f"{TRANSL['ratio'][LANG]} {TRANSL['kills'][LANG]}/{TRANSL['deaths'][LANG]} : {message_vars['kd_ratio']}\n"
-
     if STATS_TO_DISPLAY["most_killed"]:
         message += f"\n{TRANSL['victims'][LANG]}\n{message_vars['most_killed']}\n"
     if STATS_TO_DISPLAY["most_death_by"]:
