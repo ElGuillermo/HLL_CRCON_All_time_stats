@@ -421,7 +421,7 @@ def construct_message(player_name:str, message_vars: dict) -> str:
         or STATS_TO_DISPLAY["tot_deaths"]
         or STATS_TO_DISPLAY["tot_deaths_by_tk"]
     ):
-        message += f"\n{TRANSL['totals'][LANG]} :\n"
+        message += f"\n{TRANSL['totals'][LANG]}\n"
     # Totals (4 following)
     if STATS_TO_DISPLAY["tot_kills"]:
         message += f"{TRANSL['kills'][LANG]} : {message_vars['tot_kills']}"
