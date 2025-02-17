@@ -60,11 +60,12 @@ STATS_TO_DISPLAY = {
 
     # "totals" header (2 lines) will be added if any of the 4 following is True
     # As "tot_teamkills" and "tot_deaths_by_tk" can follow "tot_kills" and "top_deaths" on their lines,
-    # setting the 5 values to True will add 5 lines (2 lines of header + 3 lines of stats)
+    # setting the 4 values to True will add 4 lines (2 lines of header + 2 lines of stats)
     "tot_kills": True,          # 1 line
     "tot_teamkills": True,      # 1 line or 0 if "tot_kills" is True
     "tot_deaths": True,         # 1 line
     "tot_deaths_by_tk": True,   # 1 line or 0 if "tot_deaths" is True
+
     "kd_ratio": True,           # 1 line
 
     "most_killed": True,        # 5 lines (2 lines of header + 3 lines of stats)  # Console : set it to False
