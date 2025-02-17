@@ -49,16 +49,19 @@ STATS_TO_DISPLAY = {
     "cumulatedplaytime": True,  # 2 lines
     "avg_sessiontime": True,  # 1 line
     "tot_punishments": True,  # 2 or 3 lines
-    # "averages" header will be added if any of the 4 following is True
+    # "averages" header (2 lines) will be added if any of the 4 following is True
+    # 2 stats can be displayed on a line, so the whole thing will take
+    # - 3 lines (2 lines of header + 1 line of stats) if only one or two stats are True,
+    # - 4 lines if three or all stats are True
     "avg_combat": True,
     "avg_offense": True,
     "avg_defense": True,
     "avg_support": True,
-    # "totals" header will be added if any of the 4 following is True
-    "tot_kills": True,
-    "tot_teamkills": True,
-    "tot_deaths": True,
-    "tot_deaths_by_tk": True,
+    # "totals" header (2 lines) will be added if any of the 4 following is True
+    "tot_kills": True,  # 1 line
+    "tot_teamkills": True,  # 0 line if "tot_kills" is True, 1 line otherwise
+    "tot_deaths": True,  # 1 line
+    "tot_deaths_by_tk": True,  # 0 line if "tot_deaths" is True, 1 line otherwise
     "kd_ratio": True,  # 1 line
     "most_killed": True,  # 5 lines
     "most_death_by": True,  # 5 lines
