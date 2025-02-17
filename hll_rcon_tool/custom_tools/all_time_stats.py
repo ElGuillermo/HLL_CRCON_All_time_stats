@@ -39,8 +39,7 @@ LANG = 0
 
 # Stats to display
 # If you're hosting a console game server,
-# you want to avoid the message to be scrollable,
-# so you only have 16 lines to display.
+# you want to avoid the message to be scrollable (you only have 16 lines available).
 STATS_TO_DISPLAY = {
     "playername": True,         # 1 line
     "firsttimehere": True,      # 2 lines  # Console : set it to False
