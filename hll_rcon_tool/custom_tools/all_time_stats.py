@@ -52,7 +52,7 @@ STATS_TO_DISPLAY = {
     # "averages" header (2 lines) will be added if any of the 4 following is True
     # 2 stats can be displayed on a line, so the whole thing will take
     # - 3 lines (2 lines of header + 1 line of stats) if only one or two stats are True,
-    # - 4 lines if three or all stats are True
+    # - 4 lines (2 lines of header + 2 lines of stats) if three or all stats are True
     "avg_combat": True,
     "avg_offense": True,
     "avg_defense": True,
@@ -137,7 +137,7 @@ if LANG < 0 or LANG >= len(TRANSL["years"]):
 
 def format_to_hms(hours: int, minutes: int, seconds: int, display_seconds: bool=True) -> str:
     """
-    Formats the hours, minutes, and seconds as XXhXXmXXs or XXhXXm.
+    Formats the hours, minutes, and seconds as XXhXXmXXs or XXhXX.
     """
     if display_seconds:
         return f"{int(hours)}h{int(minutes):02d}m{int(seconds):02d}s"
