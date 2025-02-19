@@ -52,7 +52,7 @@ STATS_TO_DISPLAY = {
     # "averages" header (2 lines) will be added if any of the 4 following is True
     # 2 stats can be displayed on a line, so the whole thing will take
     # - 3 lines (2 lines of header + 1 line of stats) if only one or two stats are True,
-    # - 4 lines (2 lines of header + 2 lines of stats) if three or all stats are True
+    # - 4 lines if three or all stats are True
     "avg_combat": True,
     "avg_offense": True,
     "avg_defense": True,
@@ -81,6 +81,8 @@ DISPLAY_SECS = False
 # format is : "key": ["english", "french", "german", "polish"]
 # ----------------------------------------------
 TRANSL = {
+    "nostat": ["No stat to display", "Aucune stat", "Keine Statistik zum Anzeigen", "Brak statystyk do wyświetlenia"],
+    "onfirstsession": ["First time here !\nWelcome !", "C'est ta première visite !\nBienvenue !", "Zum ersten Mal hier! \nWillkommen!", "Pierwszy raz tutaj!\nWitamy!"],
     "years": ["years", "années", "Jahre", "Lata"],
     "months": ["months", "mois", "Monate", "Miesiące"],
     "days": ["days", "jours", "Tage", "Dni"],
@@ -137,7 +139,7 @@ if LANG < 0 or LANG >= len(TRANSL["years"]):
 
 def format_to_hms(hours: int, minutes: int, seconds: int, display_seconds: bool=True) -> str:
     """
-    Formats the hours, minutes, and seconds as XXhXXmXXs or XXhXX.
+    Formats the hours, minutes, and seconds as XXhXXmXXs or XXhXXm.
     """
     if display_seconds:
         return f"{int(hours)}h{int(minutes):02d}m{int(seconds):02d}s"
@@ -205,9 +207,9 @@ def get_penalties_message(player_profile_data) -> str:
     return penalties_message
 
 
-def define_stats_to_display(player_id: str):
+def get_profile_stats(player_id: str):
     """
-    Define the stats to display according to the user configuration
+    Ask for get_player_profile() if any of its data is required in user configuration
     """
     # Flag to check if we need player profile data
     stats_needing_profile = [
@@ -225,11 +227,18 @@ def define_stats_to_display(player_id: str):
         try:
             player_profile = get_player_profile(player_id=player_id, nb_sessions=0)
         except Exception as error:
-            logger.error("Failed to retrieve player profile: %s", error)
+            logger.error("Failed to retrieve player profile data: %s", error)
     else:
         logger.info("No stat requires player profile data.")
 
-    # Construct db queries dict
+    return player_profile
+
+
+def get_db_stats(player_id: str):
+    """
+    Retrieves the db stats according to the user configuration
+    """
+    # Define the SQL queries to execute
     stats_needing_queries = [
         "tot_playedgames",
         "avg_combat",
@@ -249,22 +258,50 @@ def define_stats_to_display(player_id: str):
                           for key, include in STATS_TO_DISPLAY.items()
                           if include and key in stats_needing_queries}
 
-    if not queries_to_execute:
+    # If there's no query to execute
+    if len(queries_to_execute) == 0:
         logger.info("No stat requires SQL queries.")
-        return player_profile, {}
+        return {}
 
-    return player_profile, queries_to_execute
+    # Executing required queries
+    with enter_session() as sess:
+
+        # Retrieve the player's database id (it's not the same as its game id).
+        player_id_query = "SELECT s.id FROM steam_id_64 AS s WHERE s.steam_id_64 = :player_id"
+        db_player_id_row = sess.execute(text(player_id_query), {"player_id": player_id}).fetchone()
+        db_player_id = db_player_id_row[0]
+
+        # Can't find the player's database id
+        if not db_player_id:
+            logger.error("Couldn't find player's id in database. No database data have been processed.")
+            return {}
+
+        # Get the db_stats
+        db_stats = {}
+        for key, query in queries_to_execute.items():
+            result = sess.execute(text(query), {"db_player_id": db_player_id}).fetchall()
+            db_stats[key] = result
+
+    return db_stats
 
 
-def process_stats_to_display(player_id:str, player_profile, queries_to_execute:dict) -> dict:
+def process_stats(player_profile, db_stats:dict) -> dict:
     """
     Store the stats to display in a dict.
     """
     message_vars = {}
 
-    # Set message_vars from get_player_profile()
+    # Cancel all queries if this is the player's first session
+    message_vars["onfirstsession"] = False
+    if int(player_profile.get("sessions_count", "1")) == 1:
+        message_vars["onfirstsession"] = True
+        return message_vars
+
+    # No stat requiring player_profile
     if player_profile is None:
         logger.info("No stat requires player profile data.")
+
+    # Set message_vars from player_profile
     else:
         if STATS_TO_DISPLAY["firsttimehere"]:
             created: str = player_profile.get("created", "2025-01-01T00:00:00.000000")
@@ -282,62 +319,47 @@ def process_stats_to_display(player_id:str, player_profile, queries_to_execute:d
         if STATS_TO_DISPLAY["tot_punishments"]:
             message_vars["tot_punishments"] = str(get_penalties_message(player_profile))
 
-    # Set message_vars dict from SQL queries results
-    if len(queries_to_execute) == 0:
-        logger.info("No stat requires SQL queries.")
-    else:
-        with enter_session() as sess:
-            # Retrieve the player's database id (it's not the same as its game id).
-            player_id_query = "SELECT s.id FROM steam_id_64 AS s WHERE s.steam_id_64 = :player_id"
-            db_player_id_row = sess.execute(text(player_id_query), {"player_id": player_id}).fetchone()
-            db_player_id = db_player_id_row[0]
+    # No stat requiring db_stats
+    if len(db_stats) == 0:
+        logger.info("No stat requires db data.")
+        return message_vars
 
-            if not db_player_id:
-                logger.error("Couldn't find player's id in database. No database data have been processed.")
-                return message_vars
-
-            # Get the different SQL queries results
-            results = {}
-            for key, query in queries_to_execute.items():
-                result = sess.execute(text(query), {"db_player_id": db_player_id}).fetchall()
-                results[key] = result
-
-        # Store the results in a dict
-        if STATS_TO_DISPLAY["tot_playedgames"]:
-            message_vars["tot_playedgames"] = int(results["tot_playedgames"][0][0] or 0)
-        if STATS_TO_DISPLAY["avg_combat"]:
-            message_vars["avg_combat"] = float(results["avg_combat"][0][0] or 0)
-        if STATS_TO_DISPLAY["avg_offense"]:
-            message_vars["avg_offense"] = float(results["avg_offense"][0][0] or 0)
-        if STATS_TO_DISPLAY["avg_defense"]:
-            message_vars["avg_defense"] = float(results["avg_defense"][0][0] or 0)
-        if STATS_TO_DISPLAY["avg_support"]:
-            message_vars["avg_support"] = float(results["avg_support"][0][0] or 0)
-        if STATS_TO_DISPLAY["tot_kills"]:
-            message_vars["tot_kills"] = int(results["tot_kills"][0][0] or 0)
-        if STATS_TO_DISPLAY["tot_teamkills"]:
-            message_vars["tot_teamkills"] = int(results["tot_teamkills"][0][0] or 0)
-        if STATS_TO_DISPLAY["tot_deaths"]:
-            message_vars["tot_deaths"] = int(results["tot_deaths"][0][0] or 0)
-        if STATS_TO_DISPLAY["tot_deaths_by_tk"]:
-            message_vars["tot_deaths_by_tk"] = int(results["tot_deaths_by_tk"][0][0] or 0)
-        if STATS_TO_DISPLAY["kd_ratio"]:
-            message_vars["kd_ratio"] = float(results["kd_ratio"][0][0] or 0)
-        if STATS_TO_DISPLAY["most_killed"]:
-            message_vars["most_killed"] = "\n".join(
-                f"{row[0]} : {row[1]} ({row[2]} {TRANSL['games'][LANG]})"
-                for row in results["most_killed"]
-            )
-        if STATS_TO_DISPLAY["most_death_by"]:
-            message_vars["most_death_by"] =  "\n".join(
-                f"{row[0]} : {row[1]} ({row[2]} {TRANSL['games'][LANG]})"
-                for row in results["most_death_by"]
-            )
-        if STATS_TO_DISPLAY["most_used_weapons"]:
-            message_vars["most_used_weapons"] = "\n".join(
-                f"{row[0]} ({row[1]} kills)"
-                for row in results["most_used_weapons"]
-            )
+    # Set message_vars from SQL queries results
+    if STATS_TO_DISPLAY["tot_playedgames"]:
+        message_vars["tot_playedgames"] = int(db_stats["tot_playedgames"][0][0] or 0)
+    if STATS_TO_DISPLAY["avg_combat"]:
+        message_vars["avg_combat"] = float(db_stats["avg_combat"][0][0] or 0)
+    if STATS_TO_DISPLAY["avg_offense"]:
+        message_vars["avg_offense"] = float(db_stats["avg_offense"][0][0] or 0)
+    if STATS_TO_DISPLAY["avg_defense"]:
+        message_vars["avg_defense"] = float(db_stats["avg_defense"][0][0] or 0)
+    if STATS_TO_DISPLAY["avg_support"]:
+        message_vars["avg_support"] = float(db_stats["avg_support"][0][0] or 0)
+    if STATS_TO_DISPLAY["tot_kills"]:
+        message_vars["tot_kills"] = int(db_stats["tot_kills"][0][0] or 0)
+    if STATS_TO_DISPLAY["tot_teamkills"]:
+        message_vars["tot_teamkills"] = int(db_stats["tot_teamkills"][0][0] or 0)
+    if STATS_TO_DISPLAY["tot_deaths"]:
+        message_vars["tot_deaths"] = int(db_stats["tot_deaths"][0][0] or 0)
+    if STATS_TO_DISPLAY["tot_deaths_by_tk"]:
+        message_vars["tot_deaths_by_tk"] = int(db_stats["tot_deaths_by_tk"][0][0] or 0)
+    if STATS_TO_DISPLAY["kd_ratio"]:
+        message_vars["kd_ratio"] = float(db_stats["kd_ratio"][0][0] or 0)
+    if STATS_TO_DISPLAY["most_killed"]:
+        message_vars["most_killed"] = "\n".join(
+            f"{row[0]} : {row[1]} ({row[2]} {TRANSL['games'][LANG]})"
+            for row in db_stats["most_killed"]
+        )
+    if STATS_TO_DISPLAY["most_death_by"]:
+        message_vars["most_death_by"] =  "\n".join(
+            f"{row[0]} : {row[1]} ({row[2]} {TRANSL['games'][LANG]})"
+            for row in db_stats["most_death_by"]
+        )
+    if STATS_TO_DISPLAY["most_used_weapons"]:
+        message_vars["most_used_weapons"] = "\n".join(
+            f"{row[0]} ({row[1]} kills)"
+            for row in db_stats["most_used_weapons"]
+        )
 
     return message_vars
 
@@ -346,8 +368,13 @@ def construct_message(player_name:str, message_vars: dict) -> str:
     """
     Constructs the final message to send to the player.
     """
-    if not any(message_vars.values()):
-        return "No stats to display"
+    # (Shouldn't happen)
+    if len(message_vars) == 1 and not message_vars["onfirstsession"]:
+        return TRANSL["nostat"][LANG]
+
+    # On first connection
+    if message_vars["onfirstsession"]:
+        return TRANSL["onfirstsession"][LANG]
 
     message = ""
 
@@ -443,8 +470,9 @@ def construct_message(player_name:str, message_vars: dict) -> str:
 
 def all_time_stats(rcon: Rcon, struct_log: StructuredLogLineWithMetaData) -> None:
     """
-    Collect, process and displays statistics
+    Collect, process and displays stats
     """
+    # The calling log line sent by the server lacks mandatory data
     if (
         not (player_id := struct_log.get("player_id_1"))
         or not (player_name := struct_log.get("player_name_1"))
@@ -453,9 +481,15 @@ def all_time_stats(rcon: Rcon, struct_log: StructuredLogLineWithMetaData) -> Non
         return
 
     try:
-        player_profile, queries_to_execute = define_stats_to_display(player_id)
-        message_vars = process_stats_to_display(player_id, player_profile, queries_to_execute)
+        # Collect
+        player_profile = get_profile_stats(player_id)
+        db_stats = get_db_stats(player_id)
+
+        # Process
+        message_vars = process_stats(player_profile, db_stats)
         message = construct_message(player_name, message_vars)
+
+        # Display
         rcon.message_player(
             player_name=player_name,
             player_id=player_id,
@@ -484,9 +518,11 @@ def all_time_stats_on_chat_command(rcon: Rcon, struct_log: StructuredLogLineWith
     """
     Call the message on chat command
     """
+    # The calling log line sent by the server lacks mandatory data
     if not (chat_message := struct_log.get("sub_content")):
         logger.error("No sub_content in CHAT log")
         return
 
+    # Search for any configured chat command (case insensitive)
     if chat_message.lower() in (cmd.lower() for cmd in CHAT_COMMAND):
         all_time_stats(rcon, struct_log)
