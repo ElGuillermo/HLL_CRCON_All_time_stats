@@ -10,7 +10,7 @@ Feel free to use/modify/distribute, as long as you keep this note in your code
 """
 
 from datetime import datetime
-import logging
+from logging import getLogger
 
 from sqlalchemy.sql import text
 
@@ -19,7 +19,7 @@ from rcon.player_history import get_player_profile
 from rcon.rcon import Rcon, StructuredLogLineWithMetaData
 
 
-logger = logging.getLogger(__name__)
+logger = getLogger(__name__)
 
 
 # Configuration (you must review/change these !)
@@ -234,7 +234,7 @@ def get_profile_stats(player_id: str):
     return player_profile
 
 
-def get_db_stats(player_id: str):
+def get_db_stats(player_id: str) -> dict:
     """
     Retrieves the db stats according to the user configuration
     """
@@ -293,7 +293,7 @@ def process_stats(player_profile, db_stats:dict) -> dict:
 
     # Cancel all queries if this is the player's first session
     message_vars["onfirstsession"] = False
-    if int(player_profile.get("sessions_count", "1")) == 1:
+    if int(player_profile.get("sessions_count", 1)) == 1:
         message_vars["onfirstsession"] = True
         return message_vars
 
@@ -308,13 +308,13 @@ def process_stats(player_profile, db_stats:dict) -> dict:
             elapsed_time_seconds:int = (datetime.now() - datetime.fromisoformat(str(created))).total_seconds()
             message_vars["firsttimehere"] = str(readable_duration(elapsed_time_seconds))
         if STATS_TO_DISPLAY["tot_sessions"]:
-            message_vars["tot_sessions"] = int(player_profile.get("sessions_count", "1"))
+            message_vars["tot_sessions"] = int(player_profile.get("sessions_count", 1))
         if STATS_TO_DISPLAY["cumulatedplaytime"]:
-            total_playtime_seconds: int = player_profile.get("total_playtime_seconds", "5400")
+            total_playtime_seconds: int = player_profile.get("total_playtime_seconds", 5400)
             message_vars["cumulatedplaytime"] = str(readable_duration(total_playtime_seconds))
         if STATS_TO_DISPLAY["avg_sessiontime"]:
-            total_playtime_seconds: int = player_profile.get("total_playtime_seconds", "5400")
-            tot_sessions: int = player_profile.get("sessions_count", "1")
+            total_playtime_seconds: int = player_profile.get("total_playtime_seconds", 5400)
+            tot_sessions: int = player_profile.get("sessions_count", 1)
             message_vars["avg_sessiontime"] = str(readable_duration(int(total_playtime_seconds)/max(1, int(tot_sessions))))
         if STATS_TO_DISPLAY["tot_punishments"]:
             message_vars["tot_punishments"] = str(get_penalties_message(player_profile))
@@ -346,20 +346,20 @@ def process_stats(player_profile, db_stats:dict) -> dict:
     if STATS_TO_DISPLAY["kd_ratio"]:
         message_vars["kd_ratio"] = float(db_stats["kd_ratio"][0][0] or 0)
     if STATS_TO_DISPLAY["most_killed"]:
-        message_vars["most_killed"] = "\n".join(
+        message_vars["most_killed"] = str("\n".join(
             f"{row[0]} : {row[1]} ({row[2]} {TRANSL['games'][LANG]})"
             for row in db_stats["most_killed"]
-        )
+        ))
     if STATS_TO_DISPLAY["most_death_by"]:
-        message_vars["most_death_by"] =  "\n".join(
+        message_vars["most_death_by"] =  str("\n".join(
             f"{row[0]} : {row[1]} ({row[2]} {TRANSL['games'][LANG]})"
             for row in db_stats["most_death_by"]
-        )
+        ))
     if STATS_TO_DISPLAY["most_used_weapons"]:
-        message_vars["most_used_weapons"] = "\n".join(
+        message_vars["most_used_weapons"] = str("\n".join(
             f"{row[0]} ({row[1]} kills)"
             for row in db_stats["most_used_weapons"]
-        )
+        ))
 
     return message_vars
 
@@ -368,7 +368,7 @@ def construct_message(player_name:str, message_vars: dict) -> str:
     """
     Constructs the final message to send to the player.
     """
-    # (Shouldn't happen)
+    # (Shouldn't happen unless all STATS_TO_DISPLAY are set to False)
     if len(message_vars) == 1 and not message_vars["onfirstsession"]:
         return TRANSL["nostat"][LANG]
 
@@ -390,8 +390,10 @@ def construct_message(player_name:str, message_vars: dict) -> str:
         message += f"{TRANSL['cumulatedplaytime'][LANG]} :\n{message_vars['cumulatedplaytime']}\n"
     if STATS_TO_DISPLAY["avg_sessiontime"]:
         message += f"{TRANSL['avg_sessiontime'][LANG]} : {message_vars['avg_sessiontime']}\n"
+
     if STATS_TO_DISPLAY["tot_punishments"]:
         message += f"\n{TRANSL['tot_punishments'][LANG]}\n{message_vars['tot_punishments']}\n"
+
     # Averages header (if any of the 4 following is True)
     if (
         STATS_TO_DISPLAY["avg_combat"]
@@ -429,6 +431,7 @@ def construct_message(player_name:str, message_vars: dict) -> str:
             message += " ; "
     if STATS_TO_DISPLAY["avg_support"]:
         message += f"{TRANSL['avg_support'][LANG]} {message_vars['avg_support']}\n"
+
     # Totals header (if any of the 4 following is True)
     if (
         STATS_TO_DISPLAY["tot_kills"]
@@ -456,12 +459,16 @@ def construct_message(player_name:str, message_vars: dict) -> str:
             message += f" ({message_vars['tot_deaths_by_tk']} {TRANSL['tks'][LANG]})\n"
         else:
             message += f"{TRANSL['deaths'][LANG]} ({TRANSL['tks'][LANG]}) : {message_vars['tot_deaths_by_tk']}\n"
+
     if STATS_TO_DISPLAY["kd_ratio"]:
         message += f"{TRANSL['ratio'][LANG]} {TRANSL['kills'][LANG]}/{TRANSL['deaths'][LANG]} : {message_vars['kd_ratio']}\n"
+
     if STATS_TO_DISPLAY["most_killed"]:
         message += f"\n{TRANSL['victims'][LANG]}\n{message_vars['most_killed']}\n"
+
     if STATS_TO_DISPLAY["most_death_by"]:
         message += f"\n{TRANSL['nemesis'][LANG]}\n{message_vars['most_death_by']}\n"
+
     if STATS_TO_DISPLAY["most_used_weapons"]:
         message += f"\n{TRANSL['favoriteweapons'][LANG]}\n{message_vars['most_used_weapons']}\n"
 
