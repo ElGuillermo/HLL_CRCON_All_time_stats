@@ -12,7 +12,7 @@ Feel free to use/modify/distribute, as long as you keep this note in your code
 >>ESPAÑOL<<
 ******************************************************************************************************************
 * Se mantiene la base core distribuida por ElGuillermo, con las modificaciones en español.                       *
-* Comunidad Uranium-235 CHILE agradece la gestión y la disposición de el "ElGuillermo" para compartir su trabajo.*
+* Comunidad Acero93 - Uranium-235 CHILE agradece la gestión y la disposición de el "ElGuillermo" para compartir su trabajo.*
 ******************************************************************************************************************
 
 >>ENGLISH<<
