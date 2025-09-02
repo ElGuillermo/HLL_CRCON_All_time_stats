@@ -1,4 +1,4 @@
-# HLL_CRCON_All_time_stats
+# HLL_CRCON_All_time_stats EN ESPAÑOL CHILENO
 
 A plugin for Hell Let Loose (HLL) CRCON (see : https://github.com/MarechJ/hll_rcon_tool)  
 that displays statistic data about the player, either  
@@ -71,3 +71,34 @@ To revert to the original file :
 cd /root/hll_rcon_tool
 git restore rcon/hooks.py
 ```
+
+⚠️Nota importante ESP/ENG⚠️
+
+
+Es muy importante que actualices el sed de docker antes de ejecutar :
+
+```shell
+cd /root/hll_rcon_tool
+sed -i 's/node:20-buster-slim/node:20-bookworm-slim/g' Dockerfile-frontend
+```
+Busca todas las menciones de la imagen de Docker node:20-buster-slim dentro del archivo Dockerfile-frontend y las reemplaza por node:20-bookworm-slim, guardando los cambios directamente en el archivo (si usas Debian).
+
+Si está ok, entonces realiza:
+
+```shell
+sh ./restart.sh 
+```
+o en su defecto:
+
+```shell
+sudo docker compose down
+sudo docker compose build
+sudo docker compose up -d --remove-orphans
+```
+
+
+
+
+
+
+
