@@ -7,6 +7,21 @@ that displays a player's all-time stats on chat command and on player's connecti
 Source : https://github.com/ElGuillermo
 
 Feel free to use/modify/distribute, as long as you keep this note in your code
+
+
+>>ESPAÑOL<<
+******************************************************************************************************************
+* Se mantiene la base core distribuida por ElGuillermo, con las modificaciones en español.                       *
+* Comunidad Uranium-235 CHILE agradece la gestión y la disposición de el "ElGuillermo" para compartir su trabajo.*
+******************************************************************************************************************
+
+>>ENGLISH<<
+******************************************************************************************************************
+* The core base distributed by ElGuillermo is maintained, with the modifications in Spanish.                     *
+* The Uranium-235 CHILE community appreciates the management and willingness of "ElGuillermo" to share his work. *
+******************************************************************************************************************
+
+
 """
 
 from datetime import datetime
@@ -31,11 +46,11 @@ DISPLAY_ON_CONNECT = True
 
 # The command the players have to enter in chat to display their stats
 # Note : the command is not case sensitive (ie : '!me' or '!ME' will work)
-CHAT_COMMAND = ["!me"]
+CHAT_COMMAND = ["!yo"]
 
 # Strings translations
-# Available : 0 for english, 1 for french, 2 for german, 3 for polish
-LANG = 0
+# Available : 0 for english, 1 for french, 2 for german, 3 for polish, 4 for spanish
+LANG = 4
 
 # Stats to display
 # If you're hosting a console game server,
@@ -78,38 +93,38 @@ STATS_TO_DISPLAY = {
 DISPLAY_SECS = False
 
 # Translations
-# format is : "key": ["english", "french", "german", "polish"]
+# format is : "key": ["english", "french", "german", "polish", "spanish"]
 # ----------------------------------------------
 TRANSL = {
-    "nostat": ["No stat to display", "Aucune stat", "Keine Statistik zum Anzeigen", "Brak statystyk do wyświetlenia"],
-    "onfirstsession": ["First time here !\nWelcome !", "C'est ta première visite !\nBienvenue !", "Zum ersten Mal hier! \nWillkommen!", "Pierwszy raz tutaj!\nWitamy!"],
-    "years": ["years", "années", "Jahre", "Lata"],
-    "months": ["months", "mois", "Monate", "Miesiące"],
-    "days": ["days", "jours", "Tage", "Dni"],
-    "hours": ["hours", "heures", "Dienststunden", "Godziny"],
-    "minutes": ["minutes", "minutes", "Minuten", "Minuty"],
-    "seconds": ["seconds", "secondes", "Sekunden", "Sekundy"],
-    "firsttimehere": ["▒ First time here", "▒ Arrivé(e) il y a", "▒ Zum ersten Mal hier", "▒ Pierwszy raz tutaj"],
-    "tot_sessions": ["▒ Game sessions", "▒ Sessions de jeu", "▒ Spielesitzungen", "▒ Sesji"],
-    "playedgames": ["▒ Played games", "▒ Parties jouées", "▒ gespielte Spiele", "▒ Rozegranych gier"],
-    "cumulatedplaytime": ["▒ Cumulated play time", "▒ Temps de jeu cumulé", "▒ Kumulierte Spielzeit", "▒ Łączny czas gry"],
-    "avg_sessiontime": ["▒ Average session", "▒ Session moyenne", "▒ Durchschnittliche Sitzung", "▒ Średnio na sesje"],
-    "tot_punishments": ["▒ Punishments ▒", "▒ Punitions ▒", "▒ Strafen ▒", "▒ Kary ▒"],
-    "nopunish": ["None ! Well done !", "Aucune ! Félicitations !", "Keiner! Gut gemacht!", "Brak! Dobra robota!"],
-    "averages": ["▒ Averages", "▒ Moyennes ▒", "▒ Durchschnittswerte", "▒ Średnie"],
-    "avg_combat": ["combat", "combat", "kampf", "walka"],
-    "avg_offense": ["attack", "attaque", "angriff", "ofensywa"],
-    "avg_defense": ["defense", "défense", "verteidigung", "defensywa"],
-    "avg_support": ["support", "soutien", "unterstützung", "wsparcie"],
-    "totals": ["▒ Totals ▒", "▒ Totaux ▒", "▒ Gesamtsummen ▒", "▒ Łącznie ▒"],
-    "kills": ["kills", "kills", "tötet", "zabójstwa"],
-    "tks": ["TKs", "TKs", "TKs", "TKs"],
-    "deaths": ["deaths", "morts", "todesfälle", "śmierci"],
-    "ratio": ["ratio", "ratio", "verhältnis", "średnia"],
-    "favoriteweapons": ["▒ Favorite weapons ▒", "▒ Armes favorites ▒", "▒ Lieblingswaffen ▒", "▒ Ulubione bronie ▒"],
-    "games": ["games", "parties", "Spiele", "Gry"],
-    "victims": ["▒ Victims ▒", "▒ Victimes ▒", "▒ Opfer ▒", "▒ Ofiary ▒"],
-    "nemesis": ["▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Nemesis ▒"],
+    "nostat"            : ["No stat to display", "Aucune stat", "Keine Statistik zum Anzeigen", "Brak statystyk do wyświetlenia", "No hay estadísticas para mostrar"],
+    "onfirstsession"    : ["First time here !\nWelcome !", "C'est ta première visite !\nBienvenue !", "Zum ersten Mal hier! \nWillkommen!", "Pierwszy raz tutaj!\nWitamy!", "¡Primera vez aquí!\n¡Bienvenido A U-235 Pelaito!"],
+    "years"             : ["years", "années", "Jahre", "Lata", "Años"],
+    "months"            : ["months", "mois", "Monate", "Miesiące", "Meses"],
+    "days"              : ["days", "jours", "Tage", "Dni", "Días"],
+    "hours"             : ["hours", "heures", "Dienststunden", "Godziny", "Horas"],
+    "minutes"           : ["minutes", "minutes", "Minuten", "Minuty", "Minutos"],
+    "seconds"           : ["seconds", "secondes", "Sekunden", "Sekundy", "Segundos"],
+    "firsttimehere"     : ["▒ First time here", "▒ Arrivé(e) il y a", "▒ Zum ersten Mal hier", "▒ Pierwszy raz tutaj", "▒ Primera vez aquí"],
+    "tot_sessions"      : ["▒ Game sessions", "▒ Sessions de jeu", "▒ Spielesitzungen", "▒ Sesji", "▒ Sesiones de juego"],
+    "playedgames"       : ["▒ Played games", "▒ Parties jouées", "▒ gespielte Spiele", "▒ Rozegranych gier", "▒ Partidas jugadas"],
+    "cumulatedplaytime" : ["▒ Cumulated play time", "▒ Temps de jeu cumulé", "▒ Kumulierte Spielzeit", "▒ Łączny czas gry", "▒ Tiempo de juego acumulado"],
+    "avg_sessiontime"   : ["▒ Average session", "▒ Session moyenne", "▒ Durchschnittliche Sitzung", "▒ Średnio na sesje", "▒ Sesión promedio"],
+    "tot_punishments"   : ["▒ Punishments ▒", "▒ Punitions ▒", "▒ Strafen ▒", "▒ Kary ▒", "▒ Castigos ▒"],
+    "nopunish"          : ["None ! Well done !", "Aucune ! Félicitations !", "Keiner! Gut gemacht!", "Brak! Dobra robota!", "¡Ninguno! ¡Bien ahí pelao!"],
+    "averages"          : ["▒ Averages", "▒ Moyennes ▒", "▒ Durchschnittswerte", "▒ Średnie", "▒ Promedios"],
+    "avg_combat"        : ["combat", "combat", "kampf", "walka", "Combate"],
+    "avg_offense"       : ["attack", "attaque", "angriff", "ofensywa", "Ataque"],
+    "avg_defense"       : ["defense", "défense", "verteidigung", "defensywa", "Defensa"],
+    "avg_support"       : ["support", "soutien", "unterstützung", "wsparcie", "Apoyo"],
+    "totals"            : ["▒ Totals ▒", "▒ Totaux ▒", "▒ Gesamtsummen ▒", "▒ Łącznie ▒", "▒ Totales ▒"],
+    "kills"             : ["kills", "kills", "tötet", "zabójstwa", "Bajas"],
+    "tks"               : ["TKs", "TKs", "TKs", "TKs", "TKs"],
+    "deaths"            : ["deaths", "morts", "todesfälle", "śmierci", "Muertes"],
+    "ratio"             : ["ratio", "ratio", "verhältnis", "średnia", "KDA"],
+    "favoriteweapons"   : ["▒ Favorite weapons ▒", "▒ Armes favorites ▒", "▒ Lieblingswaffen ▒", "▒ Ulubione bronie ▒", "▒Tus Armas favoritas ▒"],
+    "games"             : ["games", "parties", "Spiele", "Gry", "Partidas"],
+    "victims"           : ["▒ Victims ▒", "▒ Victimes ▒", "▒ Opfer ▒", "▒ Ofiary ▒", "▒ Tus Hijos ▒"],
+    "nemesis"           : ["▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Tus Nemesis▒"],
 }
 
 
