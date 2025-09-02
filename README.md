@@ -72,7 +72,7 @@ cd /root/hll_rcon_tool
 git restore rcon/hooks.py
 ```
 
-⚠️Nota importante ESP/ENG⚠️
+⚠️Nota importante ESPAÑOL⚠️
 
 
 Es muy importante que actualices el sed de docker antes de ejecutar :
@@ -97,8 +97,27 @@ sudo docker compose up -d --remove-orphans
 ```
 
 
+⚠️ Important Note ESP/ENG ⚠️
 
+It is very important that you update the Docker sed before running:
 
+```shell
+cd /root/hll_rcon_tool
+sed -i 's/node:20-buster-slim/node:20-bookworm-slim/g' Dockerfile-frontend
+```
 
+This command finds all instances of the Docker image node:20-buster-slim in the Dockerfile-frontend file and replaces them with node:20-bookworm-slim, saving the changes directly to the file (especially relevant if you are using Debian).
 
+If it completes successfully, then run:
 
+```shell
+sh ./restart.sh 
+```
+
+or alternatively:
+
+```shell
+sudo docker compose down
+sudo docker compose build
+sudo docker compose up -d --remove-orphans
+```
