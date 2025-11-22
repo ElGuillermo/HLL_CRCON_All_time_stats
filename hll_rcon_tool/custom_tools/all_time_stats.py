@@ -17,6 +17,7 @@ from sqlalchemy.sql import text
 from rcon.models import enter_session
 from rcon.player_history import get_player_profile
 from rcon.rcon import Rcon, StructuredLogLineWithMetaData
+from rcon.utils import get_server_number
 
 
 logger = getLogger(__name__)
@@ -24,6 +25,12 @@ logger = getLogger(__name__)
 
 # Configuration (you must review/change these !)
 # -----------------------------------------------------------------------------
+
+# Can be enabled/disabled on your different game servers
+# ie : ["1"]           = enabled only on server 1
+#      ["1", "2"]      = enabled on servers 1 and 2
+#      ["2", "4", "5"] = enabled on servers 2, 4 and 5
+ENABLE_ON_SERVERS = ["1"]
 
 # Should we display the stats to every player on connect ?
 # True or False
@@ -34,8 +41,8 @@ DISPLAY_ON_CONNECT = True
 CHAT_COMMAND = ["!me"]
 
 # Strings translations
-# Available : 0 for english, 1 for french, 2 for german, 3 for polish, 4 for spanish
-LANG = 0
+# Available : 0 for english, 1 for french, 2 for german, 3 for polish
+LANG = 1
 
 # Stats to display
 # If you're hosting a console game server,
@@ -81,35 +88,35 @@ DISPLAY_SECS = False
 # format is : "key": ["english", "french", "german", "polish"]
 # ----------------------------------------------
 TRANSL = {
-    "nostat": ["No stat to display", "Aucune stat", "Keine Statistik zum Anzeigen", "Brak statystyk do wyświetlenia", "Sin estadísticas para mostrar"],
-    "onfirstsession": ["First time here !\nWelcome !", "C'est ta première visite !\nBienvenue !", "Zum ersten Mal hier! \nWillkommen!", "Pierwszy raz tutaj!\nWitamy!", "¡Primera vez aquí!\n¡Bienvenido!"],
-    "years": ["years", "années", "Jahre", "Lata", "años"],
-    "months": ["months", "mois", "Monate", "Miesiące", "meses"],
-    "days": ["days", "jours", "Tage", "Dni", "días"],
-    "hours": ["hours", "heures", "Dienststunden", "Godziny", "horas"],
-    "minutes": ["minutes", "minutes", "Minuten", "Minuty", "minutos"],
-    "seconds": ["seconds", "secondes", "Sekunden", "Sekundy", "segundos"],
-    "firsttimehere": ["▒ First time here", "▒ Arrivé(e) il y a", "▒ Zum ersten Mal hier", "▒ Pierwszy raz tutaj", "▒ Primera vez aquí"],
-    "tot_sessions": ["▒ Game sessions", "▒ Sessions de jeu", "▒ Spielesitzungen", "▒ Sesji", "▒ Sesiones de juego"],
-    "playedgames": ["▒ Played games", "▒ Parties jouées", "▒ gespielte Spiele", "▒ Rozegranych gier", "▒ Partidas jugadas"],
-    "cumulatedplaytime": ["▒ Cumulated play time", "▒ Temps de jeu cumulé", "▒ Kumulierte Spielzeit", "▒ Łączny czas gry", "▒ Tiempo de juego acumulado"],
-    "avg_sessiontime": ["▒ Average session", "▒ Session moyenne", "▒ Durchschnittliche Sitzung", "▒ Średnio na sesje", "▒ Sesión media"],
-    "tot_punishments": ["▒ Punishments ▒", "▒ Punitions ▒", "▒ Strafen ▒", "▒ Kary ▒", "▒ Castigos ▒"],
-    "nopunish": ["None ! Well done !", "Aucune ! Félicitations !", "Keiner! Gut gemacht!", "Brak! Dobra robota!", "¡Ninguno! ¡Bien hecho!"],
-    "averages": ["▒ Averages", "▒ Moyennes ▒", "▒ Durchschnittswerte", "▒ Średnie", "▒ Promedios ▒"],
-    "avg_combat": ["combat", "combat", "kampf", "walka", "combate"],
-    "avg_offense": ["attack", "attaque", "angriff", "ofensywa", "ataque"],
-    "avg_defense": ["defense", "défense", "verteidigung", "defensywa", "defensa"],
-    "avg_support": ["support", "soutien", "unterstützung", "wsparcie", "apoyo"],
-    "totals": ["▒ Totals ▒", "▒ Totaux ▒", "▒ Gesamtsummen ▒", "▒ Łącznie ▒", "▒ Totales ▒"],
-    "kills": ["kills", "kills", "tötet", "zabójstwa", "bajas"],
-    "tks": ["TKs", "TKs", "TKs", "TKs", "TKs"],
-    "deaths": ["deaths", "morts", "todesfälle", "śmierci", "muertes"],
-    "ratio": ["ratio", "ratio", "verhältnis", "średnia", "ratio"],
-    "favoriteweapons": ["▒ Favorite weapons ▒", "▒ Armes favorites ▒", "▒ Lieblingswaffen ▒", "▒ Ulubione bronie ▒", "▒ Armas favoritas ▒"],
-    "games": ["games", "parties", "Spiele", "Gry", "juegos"],
-    "victims": ["▒ Victims ▒", "▒ Victimes ▒", "▒ Opfer ▒", "▒ Ofiary ▒", "▒ Víctimas ▒"],
-    "nemesis": ["▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Némesis ▒"],
+    "nostat": ["No stat to display", "Aucune stat", "Keine Statistik zum Anzeigen", "Brak statystyk do wyświetlenia"],
+    "onfirstsession": ["First time here !\nWelcome !", "C'est ta première visite !\nBienvenue !", "Zum ersten Mal hier! \nWillkommen!", "Pierwszy raz tutaj!\nWitamy!"],
+    "years": ["years", "années", "Jahre", "Lata"],
+    "months": ["months", "mois", "Monate", "Miesiące"],
+    "days": ["days", "jours", "Tage", "Dni"],
+    "hours": ["hours", "heures", "Dienststunden", "Godziny"],
+    "minutes": ["minutes", "minutes", "Minuten", "Minuty"],
+    "seconds": ["seconds", "secondes", "Sekunden", "Sekundy"],
+    "firsttimehere": ["▒ First time here", "▒ Arrivé(e) il y a", "▒ Zum ersten Mal hier", "▒ Pierwszy raz tutaj"],
+    "tot_sessions": ["▒ Game sessions", "▒ Sessions de jeu", "▒ Spielesitzungen", "▒ Sesji"],
+    "playedgames": ["▒ Played games", "▒ Parties jouées", "▒ gespielte Spiele", "▒ Rozegranych gier"],
+    "cumulatedplaytime": ["▒ Cumulated play time", "▒ Temps de jeu cumulé", "▒ Kumulierte Spielzeit", "▒ Łączny czas gry"],
+    "avg_sessiontime": ["▒ Average session", "▒ Session moyenne", "▒ Durchschnittliche Sitzung", "▒ Średnio na sesje"],
+    "tot_punishments": ["▒ Punishments ▒", "▒ Punitions ▒", "▒ Strafen ▒", "▒ Kary ▒"],
+    "nopunish": ["None ! Well done !", "Aucune ! Félicitations !", "Keiner! Gut gemacht!", "Brak! Dobra robota!"],
+    "averages": ["▒ Averages", "▒ Moyennes ▒", "▒ Durchschnittswerte", "▒ Średnie"],
+    "avg_combat": ["combat", "combat", "kampf", "walka"],
+    "avg_offense": ["attack", "attaque", "angriff", "ofensywa"],
+    "avg_defense": ["defense", "défense", "verteidigung", "defensywa"],
+    "avg_support": ["support", "soutien", "unterstützung", "wsparcie"],
+    "totals": ["▒ Totals ▒", "▒ Totaux ▒", "▒ Gesamtsummen ▒", "▒ Łącznie ▒"],
+    "kills": ["kills", "kills", "tötet", "zabójstwa"],
+    "tks": ["TKs", "TKs", "TKs", "TKs"],
+    "deaths": ["deaths", "morts", "todesfälle", "śmierci"],
+    "ratio": ["ratio", "ratio", "verhältnis", "średnia"],
+    "favoriteweapons": ["▒ Favorite weapons ▒", "▒ Armes favorites ▒", "▒ Lieblingswaffen ▒", "▒ Ulubione bronie ▒"],
+    "games": ["games", "parties", "Spiele", "Gry"],
+    "victims": ["▒ Victims ▒", "▒ Victimes ▒", "▒ Opfer ▒", "▒ Ofiary ▒"],
+    "nemesis": ["▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Nemesis ▒", "▒ Nemesis ▒"],
 }
 
 
@@ -517,7 +524,8 @@ def all_time_stats_on_connected(rcon: Rcon, struct_log: StructuredLogLineWithMet
     """
     Call the message on player's connection
     """
-    if DISPLAY_ON_CONNECT:
+    server_number = get_server_number()
+    if DISPLAY_ON_CONNECT and server_number in ENABLE_ON_SERVERS:
         all_time_stats(rcon, struct_log)
 
 
@@ -525,11 +533,13 @@ def all_time_stats_on_chat_command(rcon: Rcon, struct_log: StructuredLogLineWith
     """
     Call the message on chat command
     """
+    server_number = get_server_number()
+
     # The calling log line sent by the server lacks mandatory data
-    if not (chat_message := struct_log.get("sub_content")):
+    if not (chat_message := struct_log.get("sub_content")) and server_number in ENABLE_ON_SERVERS:
         logger.error("No sub_content in CHAT log")
         return
 
     # Search for any configured chat command (case insensitive)
-    if chat_message.lower() in (cmd.lower() for cmd in CHAT_COMMAND):
+    if chat_message.lower() in (cmd.lower() for cmd in CHAT_COMMAND) and server_number in ENABLE_ON_SERVERS:
         all_time_stats(rcon, struct_log)
