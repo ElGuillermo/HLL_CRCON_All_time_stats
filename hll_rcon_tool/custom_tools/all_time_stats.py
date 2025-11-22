@@ -42,7 +42,7 @@ CHAT_COMMAND = ["!me"]
 
 # Strings translations
 # Available : 0 for english, 1 for french, 2 for german, 3 for polish, 4 for spanish
-LANG = 1
+LANG = 0
 
 # Stats to display
 # If you're hosting a console game server,
