@@ -255,7 +255,7 @@ def get_db_stats(player_id: str) -> dict:
         "tot_kills",
         "tot_teamkills",
         "tot_deaths",
-        "tot_deaths_by_tk", 
+        "tot_deaths_by_tk",
         "kd_ratio",
         "most_killed",
         "most_death_by",
@@ -536,7 +536,7 @@ def all_time_stats_on_chat_command(rcon: Rcon, struct_log: StructuredLogLineWith
     server_number = get_server_number()
 
     # The calling log line sent by the server lacks mandatory data
-    if not (chat_message := struct_log.get("sub_content")) and server_number in ENABLE_ON_SERVERS:
+    if not (chat_message := struct_log.get("sub_content")) or server_number not in ENABLE_ON_SERVERS:
         logger.error("No sub_content in CHAT log")
         return
 
