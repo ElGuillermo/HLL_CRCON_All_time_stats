@@ -87,7 +87,6 @@ DISPLAY_SECS = False
 # Translations
 # format is : "key": ["english", "french", "german", "polish", "spanish"]
 # ----------------------------------------------
-can you add spanish to this ?
 
 TRANSL = {
     "nostat": ["No stat to display", "Aucune stat", "Keine Statistik zum Anzeigen", "Brak statystyk do wyświetlenia", "Sin estadísticas para mostrar"],
