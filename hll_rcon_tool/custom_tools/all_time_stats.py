@@ -314,7 +314,7 @@ def process_stats(player_profile, db_stats:dict) -> dict:
     else:
         if STATS_TO_DISPLAY["firsttimehere"]:
             created: str = player_profile.get("created", "2025-01-01T00:00:00.000000")
-            elapsed_time_seconds:int = (datetime.now() - datetime.fromisoformat(str(created))).total_seconds()
+            elapsed_time_seconds:int = int((datetime.now() - datetime.fromisoformat(str(created))).total_seconds())
             message_vars["firsttimehere"] = str(readable_duration(elapsed_time_seconds))
         if STATS_TO_DISPLAY["tot_sessions"]:
             message_vars["tot_sessions"] = int(player_profile.get("sessions_count", 1))
@@ -324,7 +324,7 @@ def process_stats(player_profile, db_stats:dict) -> dict:
         if STATS_TO_DISPLAY["avg_sessiontime"]:
             total_playtime_seconds: int = player_profile.get("total_playtime_seconds", 5400)
             tot_sessions: int = player_profile.get("sessions_count", 1)
-            message_vars["avg_sessiontime"] = str(readable_duration(int(total_playtime_seconds)/max(1, int(tot_sessions))))
+            message_vars["avg_sessiontime"] = str(readable_duration(int(total_playtime_seconds / max(1, tot_sessions))))
         if STATS_TO_DISPLAY["tot_punishments"]:
             message_vars["tot_punishments"] = str(get_penalties_message(player_profile))
 
