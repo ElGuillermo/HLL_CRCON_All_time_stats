@@ -121,7 +121,6 @@ TRANSL = {
 }
 
 
-
 # (End of configuration)
 # -----------------------------------------------------------------------------
 
@@ -142,8 +141,14 @@ AVAILABLE_QUERIES = {
 }
 
 
-if LANG < 0 or LANG >= len(TRANSL["years"]):
-    LANG = 0  # Default to English if LANG is out of bounds
+# Check LANG
+try:
+    LANG = int(float(LANG))
+    num_langs = len(next(iter(TRANSL.values())))
+    if not (0 <= LANG < num_langs):
+        LANG = 0
+except (ValueError, TypeError, StopIteration, KeyError):
+    LANG = 0
 
 
 def format_to_hms(hours: int, minutes: int, seconds: int, display_seconds: bool=True) -> str:
