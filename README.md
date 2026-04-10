@@ -1,7 +1,7 @@
 # HLL_CRCON_All_time_stats
 
 A plugin for Hell Let Loose (HLL) CRCON (see : https://github.com/MarechJ/hll_rcon_tool)  
-that displays statistic data about the player, either  
+that displays statistic data about the player, either :  
 - on connect
 - when asking for them in chat (`!me`) ;
 
@@ -70,23 +70,18 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 ## Limitations
 
 ### Modifying code or settings
-⚠️ Any change to these files requires to rebuild and restart  
-CRCON Docker containers to be effective :
+⚠️ Any change to these files requires to rebuild and restart CRCON Docker containers to be effective :
 - `/root/hll_rcon_tool/custom_tools/all_time_stats.py`
 - `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py`
 - `/root/hll_rcon_tool/custom_tools/common_translations.py`
 - `/root/hll_rcon_tool/rcon/hooks.py`
 
 ### Upgrading CRCON
-This plugin requires a modification of the  
-`/root/hll_rcon_tool/rcon/hooks.py` file,  
-which originates from the official CRCON depot.  
+This plugin requires a modification of the `/root/hll_rcon_tool/rcon/hooks.py` file, which originates from the official CRCON repository.  
 
-⚠️ If any CRCON upgrade implies updating this file,  
-the official CRCON upgrade given instructions will **FAIL**.  
+⚠️ If any CRCON upgrade implies updating this file, the official CRCON upgrade given instructions will **FAIL**.  
 
-To successfully upgrade your CRCON,  
-you'll have to revert the changes back :
+To successfully upgrade your CRCON, you'll have to revert the changes back :
 ```shell
 cd /root/hll_rcon_tool
 
