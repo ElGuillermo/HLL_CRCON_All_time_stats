@@ -57,12 +57,15 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 
   sh ./restart.sh
   ```
-  If you don't want to use the `restart.sh` script, you can rebuild containers and restart CRCON using Docker commands :  
-  ```shell
-  cd /root/hll_rcon_tool
-
-  sudo docker compose build && sudo docker compose down && sudo docker compose up -d --remove-orphans
-  ```
+> [!NOTE]
+> 
+>  If you don't want to use the `restart.sh` script,
+>  you can rebuild containers and restart CRCON using Docker commands :  
+>  ```shell
+>  cd /root/hll_rcon_tool
+>
+>  sudo docker compose build && sudo docker compose down && sudo docker compose up -d --remove-orphans
+>  ```
 
 ## Limitations
 ⚠️ Any change to these files requires a CRCON rebuild and restart (using the `restart.sh` script) to be taken in account :
