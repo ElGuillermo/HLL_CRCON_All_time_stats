@@ -23,6 +23,8 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
     cd /root/hll_rcon_tool
   
     wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_restart/refs/heads/main/restart.sh
+
+    chmod +x restart.sh
   
     mkdir -p custom_tools
     
@@ -51,8 +53,12 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
     ```
 
 ## Config
-- Edit `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py` and set the parameters to fit your needs.
-- Restart CRCON :
+
+### Change settings
+  - Edit `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py` and set the parameters to fit your needs.
+
+### Rebuild and restart CRCON Docker containers
+  - Enter these commands, one line at a time
   ```shell
   cd /root/hll_rcon_tool
 
@@ -61,7 +67,7 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 > [!NOTE]
 > 
 >  If you don't want to use the `restart.sh` script,  
->  you can rebuild containers and restart CRCON using Docker commands :  
+>  you can use Docker commands :  
 >  ```shell
 >  cd /root/hll_rcon_tool
 >
