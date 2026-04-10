@@ -33,12 +33,12 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 
   wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_custom_common_translations.py/refs/heads/main/common_translations.py
   ```
-### 3/3 Edit `/root/hll_rcon_tool/rcon/hooks.py` and add these lines:
-  - (in the import part, on top of the file)
+### 3/3 Edit `/root/hll_rcon_tool/rcon/hooks.py`
+  - Add these lines in the import part, on top of the file
     ```python
     import custom_tools.all_time_stats as all_time_stats
     ```
-  - (at the very end of the file)
+  - Add these lines at the very bottom of the file
     ```python
     @on_connected()
     def alltimestats_on_connected(rcon: Rcon, struct_log: StructuredLogLineWithMetaData):
