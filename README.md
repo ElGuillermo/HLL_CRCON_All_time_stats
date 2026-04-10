@@ -16,7 +16,8 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 
 ### Log into your CRCON host machine using SSH
 
-### Download the tool (enter these commands, one line at a time)  
+### Download the tool
+(enter these commands, one line at a time)  
   ```shell
   cd /root/hll_rcon_tool
 
