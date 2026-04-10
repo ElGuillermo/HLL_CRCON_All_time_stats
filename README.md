@@ -23,9 +23,6 @@ Available in english, french, german, polish and spanish.
 
 - Log into your CRCON host machine using SSH and enter these commands (one line at at time) :  
 
-  First part  
-  If you already have installed any other "custom tools" from ElGuillermo, you can skip this part.  
-  (though it's always a good idea to redownload the files, as they could have been updated)
   ```shell
   cd /root/hll_rcon_tool
 
