@@ -28,13 +28,18 @@ Available in english, french, german, polish and spanish.
   (though it's always a good idea to redownload the files, as they could have been updated)
   ```shell
   cd /root/hll_rcon_tool
-  wget https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_restart/refs/heads/main/restart.sh
-  mkdir custom_tools
-  ```
-  Second part
-  ```shell
+
+  wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_restart/refs/heads/main/restart.sh
+
+  mkdir -p custom_tools
+  
   cd /root/hll_rcon_tool/custom_tools
-  wget https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats.py
+
+  wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats.py
+
+  wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats_config.py
+
+  wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_custom_common_translations.py/refs/heads/main/common_translations.py
   ```
 - Edit `/root/hll_rcon_tool/rcon/hooks.py` and add these lines:
   - (in the import part, on top of the file)
@@ -53,16 +58,25 @@ Available in english, french, german, polish and spanish.
     ```
 
 ## Config
-- Edit `/root/hll_rcon_tool/custom_tools/all_time_stats.py` and set the parameters to fit your needs.
+- Edit `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py` and set the parameters to fit your needs.
 - Restart CRCON :
   ```shell
   cd /root/hll_rcon_tool
+
   sh ./restart.sh
+  ```
+  If you don't want to use the `restart.sh` script, you can rebuild containers and restart CRCON using Docker commands :  
+  ```shell
+  cd /root/hll_rcon_tool
+
+  sudo docker compose build && sudo docker compose down && sudo docker compose up -d --remove-orphans
   ```
 
 ## Limitations
 ⚠️ Any change to these files requires a CRCON rebuild and restart (using the `restart.sh` script) to be taken in account :
 - `/root/hll_rcon_tool/custom_tools/all_time_stats.py`
+- `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py`
+- `/root/hll_rcon_tool/custom_tools/common_translations.py`
 - `/root/hll_rcon_tool/rcon/hooks.py`
 
 ⚠️ This plugin requires a modification of the `/root/hll_rcon_tool/rcon/hooks.py` file, which originates from the official CRCON depot.  
