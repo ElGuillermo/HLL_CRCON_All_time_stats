@@ -5,7 +5,7 @@ that displays statistic data about the player, either
 - on connect
 - when asking for them in chat (`!me`) ;
 
-Available in english, french, german, polish and spanish.
+Available in english, french, german, spanish, polish, brazilian portuguese, russian and chinese.
 
 <img width="3826" height="1167" alt="image" src="https://github.com/user-attachments/assets/e4b6302e-5db2-4842-afc0-9cabae7a732b" />
 
