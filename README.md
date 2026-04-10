@@ -11,7 +11,7 @@ that displays player stats on this game server.
 - Stats can be displayed on player's connexion.
 - Stats can be called anytime using a configurable chat command (default: `!me`).
 - You can select the stats you want to display in config.
-- Available in english, french, german, spanish, polish, brazilian portuguese, russian and chinese.
+- Available translations : english, french, spanish, german, russian, brazilian portuguese, polish and chinese.
 
 ## Install
 
