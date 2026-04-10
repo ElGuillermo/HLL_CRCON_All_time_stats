@@ -17,22 +17,22 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 ### 1/3 Log into your CRCON host machine using SSH
 
 ### 2/3 Download the tool
-(enter these commands, one line at a time)  
-  ```shell
-  cd /root/hll_rcon_tool
-
-  wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_restart/refs/heads/main/restart.sh
-
-  mkdir -p custom_tools
+  - Enter these commands, one line at a time
+    ```shell
+    cd /root/hll_rcon_tool
   
-  cd /root/hll_rcon_tool/custom_tools
-
-  wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats.py
-
-  wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats_config.py
-
-  wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_custom_common_translations.py/refs/heads/main/common_translations.py
-  ```
+    wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_restart/refs/heads/main/restart.sh
+  
+    mkdir -p custom_tools
+    
+    cd /root/hll_rcon_tool/custom_tools
+  
+    wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats.py
+  
+    wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats_config.py
+  
+    wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_custom_common_translations.py/refs/heads/main/common_translations.py
+    ```
 ### 3/3 Edit `/root/hll_rcon_tool/rcon/hooks.py`
   - Add this line in the import part, on top of the file
     ```python
