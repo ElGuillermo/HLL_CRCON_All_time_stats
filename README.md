@@ -7,7 +7,7 @@ that displays statistic data about the player, either
 
 Available in english, french, german, polish and spanish.
 
-![375490122-d8c7be50-aa6e-4949-b789-c327cacb2a1a](https://github.com/user-attachments/assets/4e9105d9-f87b-40e9-a489-da74cbb8f267)
+<img width="3826" height="1167" alt="image" src="https://github.com/user-attachments/assets/e4b6302e-5db2-4842-afc0-9cabae7a732b" />
 
 ## Install
 
