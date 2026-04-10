@@ -14,9 +14,9 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 > [!NOTE]
 > The shell commands given below assume your CRCON is installed in `/root/hll_rcon_tool`.  
 
-- Log into your CRCON host machine using SSH
+### Log into your CRCON host machine using SSH
 
-- Download the tool (enter these commands, one line at a time)  
+### Download the tool (enter these commands, one line at a time)  
   ```shell
   cd /root/hll_rcon_tool
 
@@ -32,7 +32,7 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 
   wget -O https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_custom_common_translations.py/refs/heads/main/common_translations.py
   ```
-- Edit `/root/hll_rcon_tool/rcon/hooks.py` and add these lines:
+### Edit `/root/hll_rcon_tool/rcon/hooks.py` and add these lines:
   - (in the import part, on top of the file)
     ```python
     import custom_tools.all_time_stats as all_time_stats
