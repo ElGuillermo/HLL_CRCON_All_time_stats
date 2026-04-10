@@ -68,13 +68,18 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 >  ```
 
 ## Limitations
-⚠️ Any change to these files requires a CRCON rebuild and restart to be taken in account :
+
+### Modifying code or settings
+⚠️ Any change to these files requires to rebuild and restart  
+CRCON Docker containers to be effective :
 - `/root/hll_rcon_tool/custom_tools/all_time_stats.py`
 - `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py`
 - `/root/hll_rcon_tool/custom_tools/common_translations.py`
 - `/root/hll_rcon_tool/rcon/hooks.py`
 
-⚠️ This plugin requires a modification of the `/root/hll_rcon_tool/rcon/hooks.py` file,  
+### Upgrading CRCON
+⚠️ This plugin requires a modification of the  
+`/root/hll_rcon_tool/rcon/hooks.py` file,  
 which originates from the official CRCON depot.  
 If any CRCON upgrade implies updating this file,  
 the usual CRCON upgrade instructions will **FAIL**.  
