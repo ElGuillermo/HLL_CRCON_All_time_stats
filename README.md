@@ -1,7 +1,7 @@
 # HLL_CRCON_All_time_stats
 
 A plugin for Hell Let Loose (HLL) CRCON (see : https://github.com/MarechJ/hll_rcon_tool)  
-that displays statistic data about the player, either :  
+that displays player stats on this game server, either :  
 - on connect
 - when asking for them in chat (`!me`) ;
 
