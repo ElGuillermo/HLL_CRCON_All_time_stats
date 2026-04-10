@@ -1,13 +1,17 @@
 # HLL_CRCON_All_time_stats
 
 A plugin for Hell Let Loose (HLL) CRCON (see : https://github.com/MarechJ/hll_rcon_tool)  
-that displays player stats on this game server, either :  
-- on connect
-- when asking for them in chat (`!me`) ;
-
-Available in english, french, german, spanish, polish, brazilian portuguese, russian and chinese.
+that displays player stats on this game server.
 
 <img width="3826" height="1167" alt="image" src="https://github.com/user-attachments/assets/e4b6302e-5db2-4842-afc0-9cabae7a732b" />
+
+## Features
+
+- Choose the enabled servers (ex : only on 1, 2, 3 and 7).
+- Stats can be displayed on player's connexion.
+- Stats can be called anytime using a configurable chat command (default: `!me`).
+- You can select the stats you want to display in config.
+- Available in english, french, german, spanish, polish, brazilian portuguese, russian and chinese.
 
 ## Install
 
