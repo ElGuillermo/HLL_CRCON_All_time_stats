@@ -15,6 +15,7 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
 > The shell commands given below assume your CRCON is installed in `/root/hll_rcon_tool`.  
 
 ### 1/3 Log into your CRCON host machine using SSH
+  - See [this](https://github.com/MarechJ/hll_rcon_tool/wiki/Troubleshooting-&-Help-‐-Common-procedures-‐-How-to-enter-a-SSH-terminal) if you need help to do it.
 
 ### 2/3 Download the tool
   - Enter these commands, one line at a time
