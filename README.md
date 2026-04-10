@@ -59,7 +59,7 @@ Available in english, french, german, spanish, polish, brazilian portuguese, rus
   ```
 > [!NOTE]
 > 
->  If you don't want to use the `restart.sh` script,
+>  If you don't want to use the `restart.sh` script,  
 >  you can rebuild containers and restart CRCON using Docker commands :  
 >  ```shell
 >  cd /root/hll_rcon_tool
