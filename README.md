@@ -100,7 +100,7 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 
 ### Disable this plugin
 
-- Revert the changes made in [Installation 3/3](#33-edit-roothll_rcon_toolrconhookspy)
+- Revert the changes made in [Installation 3/3](#33---edit-roothll_rcon_toolrconhookspy)
 
 --
 
