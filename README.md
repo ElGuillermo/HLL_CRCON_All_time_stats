@@ -134,7 +134,7 @@ git restore rcon/hooks.py
 
 - copy/paste the changes from  
   `/root/hll_rcon_tool/rcon/hooks.py.backup`  
-  into
+  into  
   `/root/hll_rcon_tool/rcon/hooks.py`
 - Rebuild and restart CRCON Docker containers (same procedure as in [Configuration 2/2](#22---rebuild-and-restart-crcon-docker-containers)).
 - If anything works as intended, you can delete the backup file :
