@@ -31,7 +31,7 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 
 - See [this guide](https://github.com/MarechJ/hll_rcon_tool/wiki/Troubleshooting-&-Help-‐-Common-procedures-‐-How-to-enter-a-SSH-terminal) if you need help to do it.
 
-### 2/3 - Execute these commands in your SSH terminal
+### 2/3 - Download files
 
   - Copy/paste/execute these commands :  
     ```shell
