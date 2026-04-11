@@ -50,7 +50,7 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
     wget -N https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats_config.py
       ```
 
-### 3/3 Edit `/root/hll_rcon_tool/rcon/hooks.py`
+### 3/3 - Edit `/root/hll_rcon_tool/rcon/hooks.py`
 
   - Add this line in the import part, on top of the file
     ```python
