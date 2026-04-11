@@ -119,8 +119,9 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 This plugin requires a modification of original CRCON file(s).  
 :exclamation: If any CRCON update contains a new version of this file(s), the usual CRCON upgrade procedure will **FAIL**.
 
-- Revert to the original CRCON file
-  - Copy/paste/execute these commands : 
+#### Revert to the original CRCON file(s)
+
+- Copy/paste/execute these commands : 
   ```shell
   cd /root/hll_rcon_tool
   
