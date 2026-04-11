@@ -146,4 +146,4 @@ git restore rcon/hooks.py
 
 ### Disable this plugin
 
-- Revert the changes made in [Installation 3/3]()
+- Revert the changes made in [Installation 3/3](#33-edit-roothll_rcon_toolrconhookspy)
