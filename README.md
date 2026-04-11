@@ -98,7 +98,7 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 
 ## Maintenance
 
-### Modifying code or settings
+### Modify code or settings
 
 :exclamation: Any change to these files requires to rebuild and restart CRCON Docker containers (same procedure as in [Configuration 2/2](#22---rebuild-and-restart-crcon-docker-containers)) :  
 - `/root/hll_rcon_tool/rcon/hooks.py`
@@ -106,13 +106,13 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 - `/root/hll_rcon_tool/custom_tools/all_time_stats.py`
 - `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py`
 
-### Upgrading CRCON
+### Upgrade CRCON
 
 This plugin requires a modification of original CRCON file(s).  
 :exclamation: If any CRCON update contains a new version of this file(s), the usual CRCON upgrade procedure will **FAIL**.
 
 To successfully upgrade your CRCON, you will need to undo the changes in :  
-- `/root/hll_rcon_tool/config/supervisord.conf`
+- `/root/hll_rcon_tool/rcon/hooks.py`
 
 #### Undo the changes
 
@@ -125,7 +125,7 @@ cp rcon/hooks.py rcon/hooks.py.backup
 git restore rcon/hooks.py
 ```
 
-#### Upgrade CRCON
+#### Upgrade
 
 - Follow the official upgrade instructions given in the new CRCON version announcement.
 - Don't restart CRCON Docker containers yet (don't execute `docker compose up -d`).
@@ -143,3 +143,7 @@ git restore rcon/hooks.py
 
   rm rcon/hooks.py.backup
   ```
+
+### Disable this plugin
+
+- Revert the changes made in [Installation 3/3]()
