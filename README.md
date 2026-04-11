@@ -98,6 +98,12 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 
 ## Maintenance
 
+### Disable this plugin
+
+- Revert the changes made in [Installation 3/3](#33-edit-roothll_rcon_toolrconhookspy)
+
+--
+
 ### Modify code or settings
 
 :exclamation: Any change to these files requires to rebuild and restart CRCON Docker containers (same procedure as in [Configuration 2/2](#22---rebuild-and-restart-crcon-docker-containers)) :  
@@ -105,6 +111,8 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 - `/root/hll_rcon_tool/custom_tools/common_translations.py`
 - `/root/hll_rcon_tool/custom_tools/all_time_stats.py`
 - `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py`
+
+--
 
 ### Upgrade CRCON
 
@@ -138,12 +146,9 @@ git restore rcon/hooks.py
   `/root/hll_rcon_tool/rcon/hooks.py`
 - Rebuild and restart CRCON Docker containers (same procedure as in [Configuration 2/2](#22---rebuild-and-restart-crcon-docker-containers)).
 - If anything works as intended, you can delete the backup file :
-  ```
-  cd /root/hll_rcon_tool
-
-  rm rcon/hooks.py.backup
-  ```
-
-### Disable this plugin
-
-- Revert the changes made in [Installation 3/3](#33-edit-roothll_rcon_toolrconhookspy)
+  - Copy/paste/execute these commands :  
+    ```
+    cd /root/hll_rcon_tool
+  
+    rm rcon/hooks.py.backup
+    ```
