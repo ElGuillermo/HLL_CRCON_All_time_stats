@@ -1,28 +1,39 @@
 # HLL_CRCON_All_time_stats
 
-A plugin for Hell Let Loose (HLL) CRCON (see : https://github.com/MarechJ/hll_rcon_tool)  
-that displays player stats on this game server.
+Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/MarechJ/hll_rcon_tool)
 
-<img width="3826" height="1167" alt="image" src="https://github.com/user-attachments/assets/e4b6302e-5db2-4842-afc0-9cabae7a732b" />
+### Displays players historical stats on this game server.
+
+![HLL_CRCON_All_time_stats](https://github.com/user-attachments/assets/e4b6302e-5db2-4842-afc0-9cabae7a732b)
+
+---
 
 ## Features
 
-- Choose the enabled servers (ex : only on 1, 2, 3 and 7).
+- Select the servers on which the script will be activated. (ex : only on 1, 2, 3 and 7).
+- Select the stats you want to see displayed.
 - Stats can be displayed on player's connexion.
-- Stats can be called anytime using a configurable chat command (default: `!me`).
-- You can select the stats you want to display in config.
+- Stats can be displayed anytime using a configurable chat command (default: `!me`).
 - Available translations : english, french, spanish, german, russian, brazilian portuguese, polish and chinese.
 
-## Install
+---
 
-> [!NOTE]
-> The shell commands given below assume your CRCON is installed in `/root/hll_rcon_tool`.  
+> [!IMPORTANT]
+> - The shell commands given below assume your CRCON is installed in `/root/hll_rcon_tool`  
+>   You may have installed your CRCON in a different folder.  
+>   If so, you'll have to adapt the commands below accordingly.
+>
+> - Always copy/paste/execute commands :warning: one line at a time :warning:
 
-### 1/3 Log into your CRCON host machine using SSH
-  - See [this](https://github.com/MarechJ/hll_rcon_tool/wiki/Troubleshooting-&-Help-‐-Common-procedures-‐-How-to-enter-a-SSH-terminal) if you need help to do it.
+## Installation
 
-### 2/3 Download the tool
-  - Enter these commands, one line at a time
+### 1/3 - Log into your CRCON host machine using SSH
+
+- See [this guide](https://github.com/MarechJ/hll_rcon_tool/wiki/Troubleshooting-&-Help-‐-Common-procedures-‐-How-to-enter-a-SSH-terminal) if you need help to do it.
+
+### 2/3 - Execute these commands in your SSH terminal
+
+  - Copy/paste/execute these commands :  
     ```shell
     cd /root/hll_rcon_tool
   
@@ -32,13 +43,15 @@ that displays player stats on this game server.
     
     cd /root/hll_rcon_tool/custom_tools
   
+    wget -N https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_custom_common_translations.py/refs/heads/main/common_translations.py
+
     wget -N https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats.py
   
     wget -N https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats_config.py
-  
-    wget -N https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_custom_common_translations.py/refs/heads/main/common_translations.py
-    ```
+      ```
+
 ### 3/3 Edit `/root/hll_rcon_tool/rcon/hooks.py`
+
   - Add this line in the import part, on top of the file
     ```python
     import custom_tools.all_time_stats as all_time_stats
@@ -54,49 +67,73 @@ that displays player stats on this game server.
         all_time_stats.all_time_stats_on_chat_command(rcon, struct_log)
     ```
 
-## Config
+---
 
-### Change settings
-  - Edit `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py` and set the parameters to fit your needs.
+## Configuration
 
-### Rebuild and restart CRCON Docker containers
-  - Enter these commands, one line at a time
+### 1/2 - Edit `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py`
+
+- Set the parameters to fit your needs (see inner comments for guidance).
+
+### 2/2 - Rebuild and restart CRCON Docker containers
+
+- Copy/paste/execute these commands :  
   ```shell
   cd /root/hll_rcon_tool
-
+  
   sh ./restart.sh
   ```
-> [!NOTE]
+
+> [!TIP]
 > 
->  If you don't want to use the `restart.sh` script,  
->  you can use Docker commands :  
+>  If you don't want to use the `restart.sh` script :  
+>  - Copy/paste/execute these commands :  
 >  ```shell
 >  cd /root/hll_rcon_tool
 >
 >  sudo docker compose build && sudo docker compose down && sudo docker compose up -d --remove-orphans
 >  ```
 
-## Limitations
+---
+
+## Maintenance
 
 ### Modifying code or settings
-⚠️ Any change to these files requires to rebuild and restart CRCON Docker containers to be effective :
+
+:exclamation: Any change to these files requires to rebuild and restart CRCON Docker containers (same procedure as in [Configuration 2/2](#22---rebuild-and-restart-crcon-docker-containers)) :  
+- `/root/hll_rcon_tool/rcon/hooks.py`
+- `/root/hll_rcon_tool/custom_tools/common_translations.py`
 - `/root/hll_rcon_tool/custom_tools/all_time_stats.py`
 - `/root/hll_rcon_tool/custom_tools/all_time_stats_config.py`
-- `/root/hll_rcon_tool/custom_tools/common_translations.py`
-- `/root/hll_rcon_tool/rcon/hooks.py`
 
 ### Upgrading CRCON
-This plugin requires a modification of the `/root/hll_rcon_tool/rcon/hooks.py` file, which originates from the official CRCON repository.  
 
-⚠️ If any CRCON upgrade implies updating this file, the official CRCON upgrade given instructions will **FAIL**.  
+This plugin requires a modification of original CRCON file(s).  
+:exclamation: If any CRCON update contains a new version of this file(s), the usual CRCON upgrade procedure will **FAIL**.
 
-To successfully upgrade your CRCON, you'll have to revert the changes back :
+To successfully upgrade your CRCON, you will need to undo the changes in :  
+- `/root/hll_rcon_tool/config/supervisord.conf`
+
+#### Undo the changes
+
+- Copy/paste/execute these commands : 
 ```shell
 cd /root/hll_rcon_tool
 
-cp /root/hll_rcon_tool/rcon/hooks.py /root/hll_rcon_tool/rcon/hooks.py.backup
+cp rcon/hooks.py rcon/hooks.py.backup
 
 git restore rcon/hooks.py
 ```
-Then reapply the changes saved in `/root/hll_rcon_tool/rcon/hooks.py.backup`  
-into `/root/hll_rcon_tool/rcon/hooks.py`.
+
+#### Upgrade CRCON
+
+- Follow the official upgrade instructions given in the new CRCON version announcement.
+- Don't restart CRCON Docker containers yet (don't execute `docker compose up -d`).
+
+#### Reapply changes
+
+- copy/paste the changes from  
+  `/root/hll_rcon_tool/rcon/hooks.py.backup`  
+  into
+  `/root/hll_rcon_tool/rcon/hooks.py`
+- Rebuild and restart CRCON Docker containers (same procedure as in [Configuration 2/2](#22---rebuild-and-restart-crcon-docker-containers)).
