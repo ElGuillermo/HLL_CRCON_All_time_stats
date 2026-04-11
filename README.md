@@ -119,19 +119,15 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 This plugin requires a modification of original CRCON file(s).  
 :exclamation: If any CRCON update contains a new version of this file(s), the usual CRCON upgrade procedure will **FAIL**.
 
-To successfully upgrade your CRCON, you will need to undo the changes in :  
-- `/root/hll_rcon_tool/rcon/hooks.py`
-
-#### Undo the changes
-
-- Copy/paste/execute these commands : 
-```shell
-cd /root/hll_rcon_tool
-
-cp rcon/hooks.py rcon/hooks.py.backup
-
-git restore rcon/hooks.py
-```
+- Revert to the original CRCON file
+  - Copy/paste/execute these commands : 
+  ```shell
+  cd /root/hll_rcon_tool
+  
+  cp rcon/hooks.py rcon/hooks.py.backup
+  
+  git restore rcon/hooks.py
+  ```
 
 #### Upgrade
 
