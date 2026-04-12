@@ -34,45 +34,37 @@ DISPLAY_ON_CONNECT = True
 
 # Stats to display
 # ----------------------------------------
-# If you're hosting a console game server,
-# you want to avoid the message to be scrollable (you only have 16 lines available).
+# Hosting a console game server ? - You only have 16 lines available :/
+# Suggestion 1 (16 lines) : Totals (4), all 3 most_* (12)
+# Suggestion 2 (16 lines) : playername (1), cumulatedplaytime (2), tot_playedgames (2), avg_sessiontime (2), Averages (5), Totals (4)
 STATS_TO_DISPLAY = {
     "playername": True,         # 1 line
-    "firsttimehere": True,      # 2 lines  # Console : set it to False
-    "tot_sessions": True,       # 1 line   # Console : set it to False
-    "tot_playedgames": True,    # 1 line
-    "cumulatedplaytime": True,  # 2 lines
-    "avg_sessiontime": True,    # 1 line   # Console : set it to False
-    "tot_punishments": True,    # up to 4 lines (2 lines of header + 1 or 2 lines of stats)  # Console : set it to False
+    "firsttimehere": True,      # 1+1 lines
+    "tot_sessions": True,       # 1+1 lines
+    "tot_playedgames": True,    # 1+1 lines
+    "cumulatedplaytime": True,  # 1+1 lines
+    "avg_sessiontime": True,    # 1+1 lines
+    "tot_punishments": True,    # 1+3 lines (max)
 
-    # "averages" header (2 lines) will be added if any of the 4 following is True
-    # 2 stats can be displayed on a line, so the whole thing will take
-    # - 3 lines (2 lines of header + 1 line of stats) if only one or two stats are True,
-    # - 4 lines if three or all stats are True
-    "avg_combat": True,
-    "avg_offense": True,
-    "avg_defense": True,
-    "avg_support": True,
+    # Averages (header)         # 1 line (if any of following 4 is enabled)
+    "avg_combat": True,         # 1 line
+    "avg_offense": True,        # 1 line
+    "avg_defense": True,        # 1 line
+    "avg_support": True,        # 1 line
 
-    # "totals" header (2 lines) will be added if any of the 4 following is True
-    # As "tot_teamkills" and "tot_deaths_by_tk" can follow "tot_kills" and "top_deaths" on their lines,
-    # setting the 4 values to True will add 4 lines (2 lines of header + 2 lines of stats)
+    # Totals (header)           # 1 line (if any of following 5 is enabled)
     "tot_kills": True,          # 1 line
-    "tot_teamkills": True,      # 1 line or 0 if "tot_kills" is True
+    "tot_teamkills": True,      # 0 line (same line as tot_kills)
     "tot_deaths": True,         # 1 line
-    "tot_deaths_by_tk": True,   # 1 line or 0 if "tot_deaths" is True
-
+    "tot_deaths_by_tk": True,   # 0 line (same line as tot_deaths)
     "kd_ratio": True,           # 1 line
 
-    "most_killed": True,        # 5 lines (2 lines of header + 3 lines of stats)  # Console : set it to False
-    "most_death_by": True,      # 5 lines (2 lines of header + 3 lines of stats)  # Console : set it to False
-    "most_used_weapons": True   # 5 lines (2 lines of header + 3 lines of stats)  # Console : set it to False
+    "most_killed": True,        # Victims : 1+3 lines (max)
+    "most_death_by": True,      # Nemesis : 1+3 lines (max)
+    "most_used_weapons": True   # Favorite weapons : 1+3 lines (max)
 }
 
 # Should we display seconds in the durations ?
 # True or False
+# Recommended : False
 DISPLAY_SECS = False
-
-
-# (End of configuration)
-# -----------------------------------------------------------------------------
