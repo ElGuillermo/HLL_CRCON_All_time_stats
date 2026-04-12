@@ -36,19 +36,25 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
   - Copy/paste/execute these commands :  
     ```shell
     cd /root/hll_rcon_tool
-  
+    ```  
+    ```shell
     wget -N https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_restart/refs/heads/main/restart.sh
-
+    ```  
+    ```shell
     mkdir -p custom_tools
-    
+    ```  
+    ```shell
     cd /root/hll_rcon_tool/custom_tools
-  
+    ```  
+    ```shell
     wget -N https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_custom_common_translations.py/refs/heads/main/common_translations.py
-
+    ```  
+    ```shell
     wget -N https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats.py
-  
+    ```  
+    ```shell
     wget -N https://raw.githubusercontent.com/ElGuillermo/HLL_CRCON_All_time_stats/refs/heads/main/hll_rcon_tool/custom_tools/all_time_stats_config.py
-      ```
+    ```
 
 ### 3/3 - Edit `/root/hll_rcon_tool/rcon/hooks.py`
 
@@ -80,7 +86,8 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 - Copy/paste/execute these commands :  
   ```shell
   cd /root/hll_rcon_tool
-  
+  ```  
+  ```shell
   sh ./restart.sh
   ```
 
@@ -90,7 +97,8 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 >  - Copy/paste/execute these commands :  
 >  ```shell
 >  cd /root/hll_rcon_tool
->
+>  ```  
+>  ```shell
 >  sudo docker compose build && sudo docker compose down && sudo docker compose up -d --remove-orphans
 >  ```
 
@@ -124,9 +132,11 @@ This plugin requires a modification of original CRCON file(s).
 - Copy/paste/execute these commands : 
   ```shell
   cd /root/hll_rcon_tool
-  
+  ```  
+  ```shell
   cp rcon/hooks.py rcon/hooks.py.backup
-  
+  ```  
+  ```shell
   git restore rcon/hooks.py
   ```
 
@@ -146,6 +156,7 @@ This plugin requires a modification of original CRCON file(s).
   - Copy/paste/execute these commands :  
     ```
     cd /root/hll_rcon_tool
-  
+    ```  
+    ```shell
     rm rcon/hooks.py.backup
     ```
