@@ -344,7 +344,7 @@ def construct_message(player_name: str, message_vars: dict) -> str:
     for var_key, transl_key in base_stats:
         if display.get(var_key) and var_key in message_vars:
             sep = "\n"
-            lines.append(f"\n┌ {TRANSL[transl_key][lang]}{sep}│ {message_vars[var_key]}")
+            lines.append(f"┌ {TRANSL[transl_key][lang]}{sep}│ {message_vars[var_key]}")
 
     # Punish / kicks / bans
     if display.get("tot_punishments") and "tot_punishments" in message_vars:
@@ -354,7 +354,7 @@ def construct_message(player_name: str, message_vars: dict) -> str:
         else:
             items_to_show = penalties
 
-        header = f"\n┌ {TRANSL['tot_punishments'][lang]}"
+        header = f"┌ {TRANSL['tot_punishments'][lang]}"
         rows = "\n".join([f"│ · {item}" for item in items_to_show])
         lines.append(f"{header}\n{rows}")
 
@@ -367,12 +367,12 @@ def construct_message(player_name: str, message_vars: dict) -> str:
     ]
     active_avgs = [f"│ · {TRANSL[tk][lang]} : {message_vars[vk]}" for vk, tk in avg_fields if display.get(vk)]
     if active_avgs:
-        lines.append(f"\n┌ {TRANSL['averages'][lang]}")
+        lines.append(f"┌ {TRANSL['averages'][lang]}")
         lines.append("\n".join(active_avgs))
 
     # Totals
     if any(display.get(k) for k in ["tot_kills", "tot_teamkills", "tot_deaths", "tot_deaths_by_tk"]):
-        lines.append(f"\n┌ {TRANSL['totals'][lang]}")
+        lines.append(f"┌ {TRANSL['totals'][lang]}")
 
         # Kills
         if display.get("tot_kills") or display.get("tot_teamkills"):
@@ -404,7 +404,7 @@ def construct_message(player_name: str, message_vars: dict) -> str:
     ]
     for var_key, transl_key in final_sections:
         if display.get(var_key) and var_key in message_vars:
-            lines.append(f"\n┌ {TRANSL[transl_key][lang]}\n│ · {message_vars[var_key]}")
+            lines.append(f"┌ {TRANSL[transl_key][lang]}\n│ · {message_vars[var_key]}")
 
     return "\n".join(lines)
 
