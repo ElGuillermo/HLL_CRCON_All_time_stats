@@ -24,13 +24,15 @@ LANG = 0
 #      ["2", "4", "5"] = enabled on servers 2, 4 and 5
 ENABLE_ON_SERVERS = ["1"]
 
-# The command the players have to enter in chat to display their stats
-# Note : the command is not case sensitive (ie : '!me' or '!ME' will work)
-CHAT_COMMAND = ["!me"]
-
 # Should we display the stats to every player on connect ?
-# True or False
+# True / False
 DISPLAY_ON_CONNECT = True
+
+# The command(s) the players have to enter in chat to display their stats
+# You can have multiple commands
+# ex : ["!me", "!mystats"]
+# Note : the command is not case sensitive (ie : '!me' or '!ME' will work the same)
+CHAT_COMMAND = ["!me"]
 
 # Stats to display
 # ----------------------------------------
@@ -44,7 +46,6 @@ STATS_TO_DISPLAY = {
     "tot_playedgames": True,    # 1+1 lines
     "cumulatedplaytime": True,  # 1+1 lines
     "avg_sessiontime": True,    # 1+1 lines
-    "tot_punishments": True,    # 1+3 lines (max)
 
     # Averages (header)         # 1 line (if any of following 4 is enabled)
     "avg_combat": True,         # 1 line
@@ -61,7 +62,9 @@ STATS_TO_DISPLAY = {
 
     "most_killed": True,        # Victims : 1+3 lines (max)
     "most_death_by": True,      # Nemesis : 1+3 lines (max)
-    "most_used_weapons": True   # Favorite weapons : 1+3 lines (max)
+    "most_used_weapons": True,  # Favorite weapons : 1+3 lines (max)
+
+    "tot_punishments": True,    # 1+3 lines (max)
 }
 
 # Should we display seconds in the durations ?
