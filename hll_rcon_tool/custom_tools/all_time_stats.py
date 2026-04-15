@@ -10,13 +10,13 @@ Feel free to use/modify/distribute, as long as you keep this note in your code
 """
 
 from datetime import datetime
-import logging
-import os
+import logging                                      # logger setup
+import os                                           # logger setup
 from typing import Any
 from sqlalchemy.sql import text
 
 from rcon.models import enter_session
-from rcon.player_history import get_player_profile
+from rcon.player_history import get_player_profile  # get_profile_stats()
 from rcon.rcon import Rcon, StructuredLogLineWithMetaData
 from rcon.utils import get_server_number
 
@@ -151,7 +151,7 @@ def get_penalties_data(player_profile_data) -> list[str]:
 
 def get_profile_stats(player_id: str):
     """
-    Ask for get_player_profile() if any of its data is required in user configuration
+    Ask for get_player_profile() only if any of its data is required in user configuration
     """
     # Flag to check if we need player profile data
     stats_needing_profile = [
@@ -201,22 +201,22 @@ def get_db_stats(player_id: str) -> dict:
                           for key, include in all_time_stats_config.STATS_TO_DISPLAY.items()
                           if include and key in stats_needing_queries}
 
-    # If there's no query to execute
+    # No configured stat needs a query
     if len(queries_to_execute) == 0:
-        logger.info("No stat requires SQL queries.")
+        logger.debug("No stat requires SQL queries.")
         return {}
 
     # Executing required queries
     with enter_session() as sess:
 
-        # Retrieve the player's database id (it's not the same as its game id).
+        # Retrieve the player's CRCON database id (not the same as its game id).
         player_id_query = "SELECT s.id FROM steam_id_64 AS s WHERE s.steam_id_64 = :player_id"
         db_player_id_row = sess.execute(text(player_id_query), {"player_id": player_id}).fetchone()
         db_player_id = db_player_id_row[0]
 
         # Can't find the player's database id
         if not db_player_id:
-            logger.error(f"Couldn't find player's id '%s' in database. No database data has been processed.", player_id)
+            logger.error(f"Couldn't find player's id '%s' in database. No database data can be processed.", player_id)
             return {}
 
         # Get the db_stats
@@ -230,14 +230,15 @@ def get_db_stats(player_id: str) -> dict:
 
 def process_stats(player_profile, db_stats: dict) -> dict[str, Any]:
     """
-    Store the stats to display in a dict.
+    Store the stats (profile + db) to display in a 'message_vars' dict.
     """
     message_vars: dict[str, Any] = {"onfirstsession": False}
     config = all_time_stats_config
     display_cfg = config.STATS_TO_DISPLAY
 
-    # First session
     sessions_count = int(player_profile.get("sessions_count", 1)) if player_profile else 1
+
+    # First session
     if sessions_count <= 1:
         message_vars["onfirstsession"] = True
         return message_vars
@@ -264,20 +265,26 @@ def process_stats(player_profile, db_stats: dict) -> dict[str, Any]:
         if display_cfg.get("tot_punishments"):
             message_vars["tot_punishments"] = get_penalties_data(player_profile)
     else:
-        logger.info("No stat requires player profile data.")
+        logger.debug("No stat requires player profile data.")
 
     # Database data
     if not db_stats:
-        logger.info("No stat requires db data.")
+        logger.debug("No stat requires db data.")
         return message_vars
 
+    # Single value stats
+
     def get_sql_val(key, default=0, cast=int):
+        """
+        Helper : get the value and check for its type
+        """
         try:
             val = db_stats[key][0][0]
             return cast(val) if val is not None else default
         except (KeyError, IndexError, TypeError):
             return default
 
+    # "db_stats KEY": type
     scalar_mappings = {
         "tot_playedgames": int,
         "avg_combat": float,
@@ -294,6 +301,8 @@ def process_stats(player_profile, db_stats: dict) -> dict[str, Any]:
     for key, cast_type in scalar_mappings.items():
         if display_cfg.get(key):
             message_vars[key] = get_sql_val(key, cast=cast_type)
+
+    # Multiple values stats
 
     lang = config.LANG
     game_str = TRANSL['games'][lang]
@@ -319,21 +328,21 @@ def construct_message(player_name: str, message_vars: dict) -> str:
     lang = cfg.LANG
     display = cfg.STATS_TO_DISPLAY
 
-    # First session
-    if message_vars.get("onfirstsession"):
-        return TRANSL["onfirstsession"][lang]
-
     # No stats
     if len(message_vars) <= 1:
         return TRANSL["nostatsyet"][lang]
+
+    # First session
+    if message_vars.get("onfirstsession"):
+        return TRANSL["onfirstsession"][lang]
 
     lines = []
 
     # Header
     if display.get("playername"):
-        lines.append(f"─ {player_name} ─")
+        lines.append(f"{player_name}")
 
-    # value / translation key
+    # STATS_TO_DISPLAY key / TRANSL key
     base_stats = [
         ("firsttimehere", "firsttimehere"),
         ("tot_sessions", "tot_sessions"),
@@ -345,18 +354,6 @@ def construct_message(player_name: str, message_vars: dict) -> str:
         if display.get(var_key) and var_key in message_vars:
             sep = "\n"
             lines.append(f"┌ {TRANSL[transl_key][lang]}{sep}│ {message_vars[var_key]}")
-
-    # Punish / kicks / bans
-    if display.get("tot_punishments") and "tot_punishments" in message_vars:
-        penalties = message_vars["tot_punishments"]
-        if not penalties:
-            items_to_show = [TRANSL['nopunish'][lang]]
-        else:
-            items_to_show = penalties
-
-        header = f"┌ {TRANSL['tot_punishments'][lang]}"
-        rows = "\n".join([f"│ · {item}" for item in items_to_show])
-        lines.append(f"{header}\n{rows}")
 
     # Averages
     avg_fields = [
@@ -406,6 +403,18 @@ def construct_message(player_name: str, message_vars: dict) -> str:
         if display.get(var_key) and var_key in message_vars:
             lines.append(f"┌ {TRANSL[transl_key][lang]}\n│ · {message_vars[var_key]}")
 
+    # Punish / kicks / bans
+    if display.get("tot_punishments") and "tot_punishments" in message_vars:
+        penalties = message_vars["tot_punishments"]
+        if not penalties:
+            items_to_show = [TRANSL['nopunish'][lang]]
+        else:
+            items_to_show = penalties
+
+        header = f"┌ {TRANSL['tot_punishments'][lang]}"
+        rows = "\n".join([f"│ · {item}" for item in items_to_show])
+        lines.append(f"{header}\n{rows}")
+
     return "\n".join(lines)
 
 
@@ -451,8 +460,13 @@ def all_time_stats_on_connected(rcon: Rcon, struct_log: StructuredLogLineWithMet
     """
     Call the message on player's connexion
     """
+    # Check if script is enabled in config for this server
     server_number = get_server_number()
-    if all_time_stats_config.DISPLAY_ON_CONNECT and server_number in all_time_stats_config.ENABLE_ON_SERVERS:
+    if str(server_number) not in all_time_stats_config.ENABLE_ON_SERVERS:
+        return
+
+    # Check if script is enabled in config to be displayed on connect
+    if all_time_stats_config.DISPLAY_ON_CONNECT:
         all_time_stats(rcon, struct_log)
 
 
@@ -460,14 +474,20 @@ def all_time_stats_on_chat_command(rcon: Rcon, struct_log: StructuredLogLineWith
     """
     Call the message on chat command
     """
+    # Check if script is enabled in config for this server
     server_number = get_server_number()
+    if str(server_number) not in all_time_stats_config.ENABLE_ON_SERVERS:
+        return
 
-    # The calling log line sent by the server lacks mandatory data
-    if not (chat_message := struct_log.get("sub_content")) or server_number not in all_time_stats_config.ENABLE_ON_SERVERS:
+    # Check log for mandatory variable
+    chat_message: str|None = struct_log["sub_content"]
+    if chat_message is None:
         logger.error("No sub_content in CHAT log")
         return
 
-    # Search for any configured chat command (case insensitive)
-    if chat_message.lower() in (cmd.lower() for cmd in all_time_stats_config.CHAT_COMMAND) and server_number in all_time_stats_config.ENABLE_ON_SERVERS:
+    # This message is one of the expected command word(s) (case insensitive)
+    if chat_message.lower() in (cmd.lower() for cmd in all_time_stats_config.CHAT_COMMAND):
+
         logger.info(f"'%s' ('%s') asked for its all_time_stats using '%s' command in chat on server '%s'", struct_log.get("player_name_1"), struct_log.get("player_id_1"), chat_message.lower(), server_number)
+
         all_time_stats(rcon, struct_log)
