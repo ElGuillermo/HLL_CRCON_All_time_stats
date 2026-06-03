@@ -12,7 +12,7 @@ Unofficial plugin for the Hell Let Loose (HLL) [CRCON](https://github.com/Marech
 
 - Select the servers on which the script will be activated. (ex : only on 1, 2, 3 and 7).
 - Select the stats you want to see displayed.
-- Stats can be displayed on player's connexion.
+- Stats can be displayed on player's connection.
 - Stats can be displayed anytime using a configurable chat command (default: `!me`).
 - Available translations : english, french, spanish, german, russian, brazilian portuguese, polish and chinese.
 
